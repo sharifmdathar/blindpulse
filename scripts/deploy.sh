@@ -18,7 +18,7 @@ command -v compact >/dev/null 2>&1 || {
 if [ ! -d "../managed/circuits" ]; then
   echo "Compiling contract..."
   cd "$(dirname "$0")/../contract"
-  compact compile blindpulse.compact
+  compact compile blindpulse.compact ../managed
 fi
 
 echo ""

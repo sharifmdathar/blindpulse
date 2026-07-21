@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "compile": "cd contract && compact compile blindpulse.compact",
+    "compile": "cd contract && compact compile blindpulse.compact ../managed",
     "test": "jest --config jest.config.js",
     "test:contract": "ts-node contract/blindpulse.test.ts",
     "deploy": "bash scripts/deploy.sh",

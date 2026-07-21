@@ -34,19 +34,20 @@ File: contract/blindpulse.compact
 Public ledger state (readable by anyone):
   - surveyActive: Boolean
   - questionCount: Uint<8>
-  - tallies: Map<Uint<8>, Map<Uint<8>, Uint<32>>>
+  - tallies: Map<Uint<8>, Map<Uint<8>, Counter>>
   - participantCount: Uint<32>
   - nullifiers: Map<Bytes<32>, Boolean>
   - organizer: Bytes<32>
 
-Exported functions:
-  1. createSurvey(organizer, questionCount) - sets up survey
-  2. submitResponse(surveyId, credential, responses[], nullifier)
-     - credential, responses, nullifier are PRIVATE WITNESSES
+Circuits (exported):
+  1. constructor(organizer, questionCount) - sets up survey, initializes tally maps
+  2. submitResponse(nullifier, responses[20])
+     - nullifier and responses are PRIVATE WITNESSES
      - Only tallies and participantCount update on-chain
-     - Nullifier is checked against ledger to prevent duplicates
-  3. getResults() - returns disclose(ledger.tallies)
-  4. closeSurvey(organizer) - deactivates survey
+     - Nullifier is disclosed (one-way hash — unlinkable)
+     - Responses are fixed-size Vector<20, Uint<8>> (MAX_Q)
+  3. getResults() - void circuit (ledger fields are publicly readable)
+  4. closeSurvey() - deactivates survey (DApp-level authorization)
 
 ## FRONTEND ARCHITECTURE
 - / (landing) - hero + privacy explainer + wallet connect

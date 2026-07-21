@@ -9,7 +9,7 @@ echo "=== BlindPulse Compile ==="
 cd "$(dirname "$0")/../contract"
 
 echo "Compiling blindpulse.compact..."
-compact compile blindpulse.compact
+compact compile blindpulse.compact ../managed
 
 echo "Compiled circuits written to ../managed/"
 echo "=== Compile complete ==="

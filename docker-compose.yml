@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   proof-server:
-    image: midnightntwrk/proof-server:latest
+    image: docker.io/midnightntwrk/proof-server:latest
     ports:
       - "6300:6300"
     volumes:

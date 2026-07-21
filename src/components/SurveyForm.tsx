@@ -39,7 +39,8 @@ export default function SurveyForm({
     );
     const nullifier = generateNullifier(credential);
 
-    await submitResponse(surveyId, credential, responses, nullifier);
+    // PRIVATE: nullifier and responses enter ZK circuit, never public ledger
+    await submitResponse(nullifier, responses);
     setSubmitted(true);
   };
 

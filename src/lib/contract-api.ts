@@ -7,12 +7,16 @@
 
 import type { Survey, SurveyResults } from "./types";
 
-/** Create a new survey (callable only by organizer) */
+/** MAX_Q — must match contract constant */
+const MAX_Q = 20;
+
+/** Deploy a new survey contract (constructor call) */
 export async function createSurvey(
   questionCount: number,
 ): Promise<Survey> {
-  // TODO: call contract circuit deploy
-  // const contract = await deploy(compiledCircuit, { organizer, questionCount });
+  // TODO: call contract circuit constructor
+  // const circuit = await import("../managed/contract/blindpulse");
+  // const contract = await deploy(circuit, [organizer, questionCount]);
   return {
     id: "0x" + Math.random().toString(16).slice(2),
     questionCount,
@@ -24,18 +28,23 @@ export async function createSurvey(
 
 /**
  * Submit responses with ZK proof of eligibility.
- * PRIVATE: credential, responses, nullifier — NEVER written to ledger.
- * PUBLIC: Only the aggregate tally updates hit the public ledger.
+ * PRIVATE: nullifier, responses — NEVER written to ledger directly.
+ * PUBLIC: nullifier is disclosed (one-way hash, unlinkable),
+ *         only aggregate tally updates hit the ledger.
  */
 export async function submitResponse(
-  surveyId: string,
-  _credential: Uint8Array, // PRIVATE WITNESS — never on-chain
+  _nullifier: Uint8Array, // PRIVATE WITNESS — disclosed as public unlinkable hash
   _responses: number[], // PRIVATE WITNESS — never on-chain
-  _nullifier: Uint8Array, // PRIVATE WITNESS — only hash stored
 ): Promise<void> {
+  // Pad responses to fixed size Vector<20, Uint<8>>
+  const padded = new Array(MAX_Q).fill(0);
+  _responses.forEach((r, i) => {
+    if (i < MAX_Q) padded[i] = r;
+  });
   // TODO: build private witness, call circuit submitResponse
-  // const witness = { credential, responses, nullifier };
-  // await contract.submitResponse(surveyId, witness);
+  // const witness = { nullifier: _nullifier, responses: padded };
+  // await contract.submitResponse(witness);
+  void padded;
 }
 
 /** Read public ledger state — aggregate tallies only */

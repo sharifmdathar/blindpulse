@@ -46,17 +46,16 @@ export function useSurvey(): UseSurveyReturn {
 
   const submitResponse = useCallback(
     async (
-      surveyId: string,
-      credential: Uint8Array,
-      responses: number[],
       nullifier: Uint8Array,
+      responses: number[],
     ): Promise<void> => {
       setLoading(true);
       setError(null);
       try {
-        // PRIVATE: credential, responses, nullifier are private witnesses
+        // PRIVATE: nullifier, responses are private witnesses
         // They enter the ZK circuit but NEVER appear on the public ledger
-        await contract.submitResponse(surveyId, credential, responses, nullifier);
+        // nullifier is disclosed as a one-way hash (unlinkable)
+        await contract.submitResponse(nullifier, responses);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to submit response",

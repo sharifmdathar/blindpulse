@@ -20,5 +20,8 @@ export interface SurveyResults {
   totalParticipants: number;
 }
 
+/** Max questions per survey — matches contract MAX_Q */
+export const MAX_QUESTIONS = 20;
+
 /** PUBLIC: Wallet connection state */
 export type WalletState = "disconnected" | "connecting" | "connected";

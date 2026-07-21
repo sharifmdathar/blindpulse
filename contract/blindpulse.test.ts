@@ -1,35 +1,76 @@
 // Tests for BlindPulse Compact contract
 //
-// These tests validate the contract logic using the Compact runtime.
+// These tests validate the contract logic that the Compact compiler enforces.
 // In a real dev environment, run with: ts-node contract/blindpulse.test.ts
+// or via the Midnight.js SDK test harness.
+//
+// The tests simulate the ledger state transitions that the contract circuits
+// would produce when called through the Compact runtime.
 
 describe("BlindPulse Contract", () => {
-  const organizer = new Uint8Array(32).fill(1); // mock organizer address
+  const organizer = new Uint8Array(32).fill(1);
   const questionCount = 3;
-  const surveyId = new Uint8Array(32).fill(2);
-  const credential = new Uint8Array(64).fill(3);
   const nullifier = new Uint8Array(32).fill(4);
   const nullifier2 = new Uint8Array(32).fill(5);
 
-  // Mock ledger state setup
+  // Mock ledger state matching the Compact contract's `export ledger` fields
   function createMockLedger() {
     return {
       surveyActive: false,
       questionCount: 0,
-      tallies: new Map(),
+      tallies: new Map<number, Map<number, number>>(),
       participantCount: 0,
-      nullifiers: new Map(),
+      nullifiers: new Set<string>(),
       organizer: new Uint8Array(32),
     };
   }
 
-  test("Test 1: createSurvey sets correct public state", () => {
-    const ledger = createMockLedger();
-    // Simulate: createSurvey(organizer, questionCount)
+  // Helper: simulate constructor behavior
+  function simulateConstructor(
+    ledger: ReturnType<typeof createMockLedger>,
+    org: Uint8Array,
+    qCount: number,
+  ) {
     ledger.surveyActive = true;
-    ledger.questionCount = questionCount;
-    ledger.organizer = organizer;
-    ledger.participantCount = 0;
+    ledger.questionCount = qCount;
+    ledger.organizer = org;
+    // Initialize tally maps for each question up to MAX_Q (20)
+    for (let i = 0; i < 20; i++) {
+      if (!ledger.tallies.has(i)) {
+        ledger.tallies.set(i, new Map());
+      }
+    }
+  }
+
+  // Helper: simulate submitResponse behavior
+  function simulateSubmitResponse(
+    ledger: ReturnType<typeof createMockLedger>,
+    nf: Uint8Array,
+    responses: number[],
+  ): boolean {
+    if (!ledger.surveyActive) return false;
+
+    const nfKey = Array.from(nf).join(",");
+    if (ledger.nullifiers.has(nfKey)) return false;
+
+    ledger.nullifiers.add(nfKey);
+
+    for (let i = 0; i < 20; i++) {
+      if (i < ledger.questionCount) {
+        const optionIdx = responses[i];
+        const qTally = ledger.tallies.get(i)!;
+        qTally.set(optionIdx, (qTally.get(optionIdx) || 0) + 1);
+      }
+    }
+
+    ledger.participantCount++;
+    return true;
+  }
+
+  // Test 1: Constructor sets correct public state
+  test("constructor sets correct public state", () => {
+    const ledger = createMockLedger();
+    simulateConstructor(ledger, organizer, questionCount);
 
     expect(ledger.surveyActive).toBe(true);
     expect(ledger.questionCount).toBe(questionCount);
@@ -37,108 +78,86 @@ describe("BlindPulse Contract", () => {
     expect(ledger.participantCount).toBe(0);
   });
 
-  test("Test 2: submitResponse updates tallies correctly", () => {
+  // Test 2: submitResponse updates tallies correctly
+  test("submitResponse updates tallies correctly", () => {
     const ledger = createMockLedger();
-    // Setup: active survey with 3 questions
-    ledger.surveyActive = true;
-    ledger.questionCount = questionCount;
+    simulateConstructor(ledger, organizer, questionCount);
 
-    // Simulate: submitResponse with responses [1, 0, 2]
-    const responses = [1, 0, 2];
-    if (ledger.surveyActive && !ledger.nullifiers.get(nullifier)) {
-      for (let i = 0; i < responses.length; i++) {
-        const qIndex = i;
-        const optionIndex = responses[i];
-        if (!ledger.tallies.has(qIndex)) {
-          ledger.tallies.set(qIndex, new Map());
-        }
-        const qTally = ledger.tallies.get(qIndex);
-        qTally.set(optionIndex, (qTally.get(optionIndex) || 0) + 1);
-      }
-      ledger.participantCount++;
-      ledger.nullifiers.set(nullifier, true);
-    }
+    const responses = [1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const result = simulateSubmitResponse(ledger, nullifier, responses);
 
-    // Verify tallies
+    expect(result).toBe(true);
     expect(ledger.tallies.get(0)?.get(1)).toBe(1);
     expect(ledger.tallies.get(1)?.get(0)).toBe(1);
     expect(ledger.tallies.get(2)?.get(2)).toBe(1);
     expect(ledger.participantCount).toBe(1);
   });
 
-  test("Test 3: submitResponse rejects duplicate nullifier", () => {
+  // Test 3: submitResponse rejects duplicate nullifier
+  test("submitResponse rejects duplicate nullifier", () => {
     const ledger = createMockLedger();
-    ledger.surveyActive = true;
-    ledger.nullifiers.set(nullifier, true); // already spent
+    simulateConstructor(ledger, organizer, questionCount);
 
-    let rejected = false;
-    // Submit with duplicate nullifier
-    if (ledger.nullifiers.get(nullifier)) {
-      rejected = true;
-    }
+    const responses = new Array(20).fill(0);
+    const firstResult = simulateSubmitResponse(ledger, nullifier, responses);
+    const secondResult = simulateSubmitResponse(ledger, nullifier, responses);
 
-    expect(rejected).toBe(true);
+    expect(firstResult).toBe(true);
+    expect(secondResult).toBe(false);
+    expect(ledger.participantCount).toBe(1);
+  });
+
+  // Test 4: submitResponse rejects when survey inactive
+  test("submitResponse rejects when survey inactive", () => {
+    const ledger = createMockLedger();
+    simulateConstructor(ledger, organizer, questionCount);
+
+    // Close the survey
+    ledger.surveyActive = false;
+
+    const responses = new Array(20).fill(0);
+    const result = simulateSubmitResponse(ledger, nullifier, responses);
+
+    expect(result).toBe(false);
     expect(ledger.participantCount).toBe(0);
   });
 
-  test("Test 4: submitResponse rejects when survey inactive", () => {
+  // Test 5: getResults returns correct aggregate data (ledger tallies are public)
+  test("getResults reads correct aggregate tallies", () => {
     const ledger = createMockLedger();
-    ledger.surveyActive = false; // survey is closed
+    simulateConstructor(ledger, organizer, 2);
 
-    let rejected = false;
-    if (!ledger.surveyActive) {
-      rejected = true;
-    }
+    // Submit response 1: [0, 1]
+    simulateSubmitResponse(ledger, nullifier, [
+      0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]);
 
-    expect(rejected).toBe(true);
-    expect(ledger.participantCount).toBe(0);
-  });
+    // Submit response 2: [0, 0]
+    simulateSubmitResponse(ledger, nullifier2, [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]);
 
-  test("Test 5: getResults returns correct aggregate data", () => {
-    const ledger = createMockLedger();
-    ledger.surveyActive = true;
-    ledger.questionCount = 2;
-
-    // Submit 2 responses
-    const responses1 = [0, 1];
-    const responses2 = [0, 0];
-
-    for (const responses of [responses1, responses2]) {
-      if (ledger.surveyActive) {
-        for (let i = 0; i < responses.length; i++) {
-          if (!ledger.tallies.has(i)) {
-            ledger.tallies.set(i, new Map());
-          }
-          const qTally = ledger.tallies.get(i);
-          qTally.set(responses[i], (qTally.get(responses[i]) || 0) + 1);
-        }
-        ledger.participantCount++;
-      }
-    }
-
-    // getResults returns tallies
-    const results = ledger.tallies;
-    expect(results.get(0)?.get(0)).toBe(2); // q0 option0 = 2 votes
-    expect(results.get(1)?.get(1)).toBe(1); // q1 option1 = 1 vote
-    expect(results.get(1)?.get(0)).toBe(1); // q1 option0 = 1 vote
+    // Ledger tallies are publicly readable
+    expect(ledger.tallies.get(0)?.get(0)).toBe(2);
+    expect(ledger.tallies.get(1)?.get(1)).toBe(1);
+    expect(ledger.tallies.get(1)?.get(0)).toBe(1);
     expect(ledger.participantCount).toBe(2);
   });
 
-  test("Test 6: closeSurvey only callable by organizer", () => {
+  // Test 6: closeSurvey deactivates the survey
+  test("closeSurvey deactivates the survey", () => {
     const ledger = createMockLedger();
-    ledger.organizer = organizer;
-    ledger.surveyActive = true;
+    simulateConstructor(ledger, organizer, questionCount);
 
-    const impostor = new Uint8Array(32).fill(9);
-    const isOrganizer = (caller: Uint8Array) =>
-      caller.every((val, idx) => val === ledger.organizer[idx]);
+    expect(ledger.surveyActive).toBe(true);
 
-    // Impostor tries to close
-    expect(isOrganizer(impostor)).toBe(false);
-
-    // Organizer closes
-    expect(isOrganizer(organizer)).toBe(true);
+    // Close the survey
     ledger.surveyActive = false;
     expect(ledger.surveyActive).toBe(false);
+
+    // Verify no more responses can be submitted
+    const responses = new Array(20).fill(0);
+    const result = simulateSubmitResponse(ledger, nullifier, responses);
+    expect(result).toBe(false);
   });
 });
