@@ -28,12 +28,12 @@ npm run dev
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| NEXT_PUBLIC_NETWORK | Midnight network | preprod |
-| NEXT_PUBLIC_CONTRACT_ADDRESS | Deployed contract address | — |
-| NEXT_PUBLIC_PROOF_SERVER_URL | Proof server URL | http://localhost:6300 |
-| LACE_EXTENSION_ID | Lace wallet extension ID | — |
+| Variable                     | Description               | Default               |
+| ---------------------------- | ------------------------- | --------------------- |
+| NEXT_PUBLIC_NETWORK          | Midnight network          | preprod               |
+| NEXT_PUBLIC_CONTRACT_ADDRESS | Deployed contract address | —                     |
+| NEXT_PUBLIC_PROOF_SERVER_URL | Proof server URL          | http://localhost:6300 |
+| LACE_EXTENSION_ID            | Lace wallet extension ID  | —                     |
 
 ## Deployment
 

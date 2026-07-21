@@ -11,9 +11,7 @@ import type { Survey, SurveyResults } from "./types";
 const MAX_Q = 20;
 
 /** Deploy a new survey contract (constructor call) */
-export async function createSurvey(
-  questionCount: number,
-): Promise<Survey> {
+export async function createSurvey(questionCount: number): Promise<Survey> {
   // TODO: call contract circuit constructor
   // const circuit = await import("../managed/contract/blindpulse");
   // const contract = await deploy(circuit, [organizer, questionCount]);

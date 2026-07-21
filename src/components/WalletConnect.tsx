@@ -4,7 +4,8 @@ import { useWallet } from "@/hooks/useWallet";
 import { truncateAddress } from "@/lib/utils";
 
 export default function WalletConnect() {
-  const { address, isConnected, connect, disconnect, status } = useWallet();
+  const { address, isConnected, connect, disconnect, status, error } =
+    useWallet();
 
   if (status === "connecting") {
     return (
@@ -34,11 +35,16 @@ export default function WalletConnect() {
   }
 
   return (
-    <button
-      onClick={connect}
-      className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-    >
-      Connect Wallet
-    </button>
+    <div className="flex flex-col items-end gap-2">
+      <button
+        onClick={connect}
+        className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
+      >
+        Connect Wallet
+      </button>
+      {error && (
+        <p className="max-w-xs text-right text-xs text-red-600">{error}</p>
+      )}
+    </div>
   );
 }

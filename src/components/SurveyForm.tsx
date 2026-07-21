@@ -52,8 +52,8 @@ export default function SurveyForm({
           Your response has been submitted anonymously.
         </p>
         <p className="mt-2 text-sm text-green-600">
-          Your identity and individual answers remain private.
-          Only aggregate tallies are recorded on-chain.
+          Your identity and individual answers remain private. Only aggregate
+          tallies are recorded on-chain.
         </p>
       </div>
     );

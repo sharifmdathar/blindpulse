@@ -35,7 +35,9 @@ export function useSurvey(): UseSurveyReturn {
         const survey = await contract.createSurvey(questionCount);
         return survey;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to create survey");
+        setError(
+          err instanceof Error ? err.message : "Failed to create survey",
+        );
         return null;
       } finally {
         setLoading(false);
@@ -45,10 +47,7 @@ export function useSurvey(): UseSurveyReturn {
   );
 
   const submitResponse = useCallback(
-    async (
-      nullifier: Uint8Array,
-      responses: number[],
-    ): Promise<void> => {
+    async (nullifier: Uint8Array, responses: number[]): Promise<void> => {
       setLoading(true);
       setError(null);
       try {

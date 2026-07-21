@@ -1,9 +1,11 @@
 # BlindPulse — Build Plan Draft
 
 ## Intent
+
 Build full BlindPulse anonymous survey platform on Midnight blockchain per blueprint. Greenfield project.
 
 ## Topology (Components)
+
 1. Root config scaffold — package.json, tsconfig, next/tailwind/postcss configs, gitignore, env, docker-compose, Makefile
 2. Compact contract — contract/blindpulse.compact (core ZK survey contract), contract/tsconfig.json
 3. Contract tests + CI — contract/blindpulse.test.ts, test/*.ts, .github/workflows/ci.yml
@@ -15,13 +17,16 @@ Build full BlindPulse anonymous survey platform on Midnight blockchain per bluep
 9. Docs + agent prompt — docs/*.md, README.md, CLAUDE.md
 
 ## Decisions (adopted defaults, no forks)
+
 - CLAUDE.md at project root for agent instructions
 - Simple CSS bar rendering for results (zero extra deps)
 - Keep contract unit tests in contract/ + integration tests in test/
 - Milestone order: scaffold → contract → tests/CI → lib → hooks → components → pages → docs → scripts
 
 ## Milestone plan
+
 9 milestones, each clean conventional commit. See .omo/plans/blindpulse.md
 
 ## Status
+
 approved

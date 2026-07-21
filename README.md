@@ -45,11 +45,11 @@ _To be added after deployment_
 
 ## Levels
 
-| Level | Status | Requirements |
-|-------|--------|-------------|
-| 1 | 🚧 | Toolchain, contract compile, deploy to Preprod, 5+ commits, README |
-| 2 | ⏳ | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
-| 3 | ⏳ | 3+ tests passing, CI/CD, 10+ commits, privacy model section |
-| 4 | ⏳ | MVP live on Preprod, docs, CI/CD, product profile |
-| 5 | ⏳ | 50 Preprod users, feedback loop, mentor approval |
-| 6 | ⏳ | Mainnet deploy, 20 real users, brand assets |
+| Level | Status | Requirements                                                             |
+| ----- | ------ | ------------------------------------------------------------------------ |
+| 1     | 🚧     | Toolchain, contract compile, deploy to Preprod, 5+ commits, README       |
+| 2     | ⏳     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
+| 3     | ⏳     | 3+ tests passing, CI/CD, 10+ commits, privacy model section              |
+| 4     | ⏳     | MVP live on Preprod, docs, CI/CD, product profile                        |
+| 5     | ⏳     | 50 Preprod users, feedback loop, mentor approval                         |
+| 6     | ⏳     | Mainnet deploy, 20 real users, brand assets                              |

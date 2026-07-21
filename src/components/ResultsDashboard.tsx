@@ -27,9 +27,7 @@ export default function ResultsDashboard({
 
   if (!results) {
     return (
-      <div className="py-12 text-center text-gray-500">
-        Loading results...
-      </div>
+      <div className="py-12 text-center text-gray-500">Loading results...</div>
     );
   }
 
@@ -94,8 +92,8 @@ export default function ResultsDashboard({
       </div>
 
       <p className="mt-8 text-center text-xs text-gray-400">
-        Results are aggregate only. Individual responses remain private
-        and are never stored on-chain.
+        Results are aggregate only. Individual responses remain private and are
+        never stored on-chain.
       </p>
     </div>
   );

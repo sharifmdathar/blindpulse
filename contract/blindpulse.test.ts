@@ -83,7 +83,9 @@ describe("BlindPulse Contract", () => {
     const ledger = createMockLedger();
     simulateConstructor(ledger, organizer, questionCount);
 
-    const responses = [1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const responses = [
+      1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
     const result = simulateSubmitResponse(ledger, nullifier, responses);
 
     expect(result).toBe(true);
@@ -128,14 +130,18 @@ describe("BlindPulse Contract", () => {
     simulateConstructor(ledger, organizer, 2);
 
     // Submit response 1: [0, 1]
-    simulateSubmitResponse(ledger, nullifier, [
-      0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ]);
+    simulateSubmitResponse(
+      ledger,
+      nullifier,
+      [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    );
 
     // Submit response 2: [0, 0]
-    simulateSubmitResponse(ledger, nullifier2, [
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ]);
+    simulateSubmitResponse(
+      ledger,
+      nullifier2,
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    );
 
     // Ledger tallies are publicly readable
     expect(ledger.tallies.get(0)?.get(0)).toBe(2);

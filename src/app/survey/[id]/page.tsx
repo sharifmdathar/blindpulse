@@ -6,8 +6,16 @@ import SurveyForm from "@/components/SurveyForm";
 
 // Mock questions — in production these would be fetched from the contract
 const MOCK_QUESTIONS = [
-  { index: 0, text: "How satisfied are you?", options: ["Very", "Somewhat", "Neutral", "Not at all"] },
-  { index: 1, text: "Would you recommend us?", options: ["Yes", "No", "Maybe"] },
+  {
+    index: 0,
+    text: "How satisfied are you?",
+    options: ["Very", "Somewhat", "Neutral", "Not at all"],
+  },
+  {
+    index: 1,
+    text: "Would you recommend us?",
+    options: ["Yes", "No", "Maybe"],
+  },
 ];
 
 export default function SurveyPage() {
@@ -28,8 +36,7 @@ export default function SurveyPage() {
       <div className="py-12 text-center">
         <h1 className="mb-4 text-2xl font-semibold">Take Survey</h1>
         <p className="mb-6 text-gray-600">
-          Connect your wallet to verify your eligibility and submit
-          anonymously.
+          Connect your wallet to verify your eligibility and submit anonymously.
         </p>
         <button
           onClick={connect}

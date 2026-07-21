@@ -39,9 +39,7 @@ export default function SurveyCreator() {
         {loading ? "Deploying..." : "Deploy Survey Contract"}
       </button>
 
-      {error && (
-        <p className="mt-3 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
       {deployedId && (
         <div className="mt-4 rounded-md bg-green-50 p-3">

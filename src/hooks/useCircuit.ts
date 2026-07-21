@@ -64,19 +64,14 @@ export function useCircuit(): UseCircuitReturn {
    *         public inputs are visible — private witnesses stay hidden.
    */
   const verifyProof = useCallback(
-    async (
-      _circuitName: string,
-      _proof: Uint8Array,
-    ): Promise<boolean> => {
+    async (_circuitName: string, _proof: Uint8Array): Promise<boolean> => {
       setLoading(true);
       setError(null);
       try {
         // TODO: verify proof via proof server or on-chain
         return true;
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to verify proof",
-        );
+        setError(err instanceof Error ? err.message : "Failed to verify proof");
         return false;
       } finally {
         setLoading(false);

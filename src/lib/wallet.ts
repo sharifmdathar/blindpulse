@@ -11,12 +11,20 @@ let connected = false;
 
 /** Request Lace connection on Preprod network */
 export async function connect(): Promise<string> {
-  // TODO: implement real Lace DApp Connector API call
-  // const api = await window.cardano.enable();
-  // const address = await api.getChangeAddress();
+  const cardano = (window as Record<string, unknown>).cardano as
+    | { enable: () => Promise<{ getChangeAddress: () => Promise<string> }> }
+    | undefined;
+
+  if (!cardano) {
+    throw new Error(
+      "Lace wallet not detected. Install the Lace extension and enable it on Preprod network.",
+    );
+  }
+
+  const api = await cardano.enable();
+  const address = await api.getChangeAddress();
   connected = true;
-  walletAddress =
-    "addr_preprod1q..." + Math.random().toString(36).slice(2, 8);
+  walletAddress = address;
   return walletAddress;
 }
 

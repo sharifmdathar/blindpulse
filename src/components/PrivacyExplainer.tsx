@@ -1,9 +1,7 @@
 export default function PrivacyExplainer() {
   return (
     <div className="rounded-lg border p-6">
-      <h3 className="mb-4 text-lg font-semibold">
-        Privacy Model
-      </h3>
+      <h3 className="mb-4 text-lg font-semibold">Privacy Model</h3>
 
       <div className="grid gap-6 md:grid-cols-2">
         <div>
@@ -30,10 +28,10 @@ export default function PrivacyExplainer() {
       </div>
 
       <div className="mt-4 rounded-md bg-blue-50 p-3 text-xs text-blue-700">
-        Responses are submitted through a Zero-Knowledge circuit. Your
-        answers and identity are private witnesses — they prove eligibility
-        without revealing WHO you are or WHAT you answered. Only the
-        group-level tally is recorded on the public ledger.
+        Responses are submitted through a Zero-Knowledge circuit. Your answers
+        and identity are private witnesses — they prove eligibility without
+        revealing WHO you are or WHAT you answered. Only the group-level tally
+        is recorded on the public ledger.
       </div>
     </div>
   );

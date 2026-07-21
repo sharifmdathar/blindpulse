@@ -5,8 +5,16 @@ import ResultsDashboard from "@/components/ResultsDashboard";
 
 // Mock questions — in production these would be fetched from contract metadata
 const MOCK_QUESTIONS = [
-  { index: 0, text: "How satisfied are you?", options: ["Very", "Somewhat", "Neutral", "Not at all"] },
-  { index: 1, text: "Would you recommend us?", options: ["Yes", "No", "Maybe"] },
+  {
+    index: 0,
+    text: "How satisfied are you?",
+    options: ["Very", "Somewhat", "Neutral", "Not at all"],
+  },
+  {
+    index: 1,
+    text: "Would you recommend us?",
+    options: ["Yes", "No", "Maybe"],
+  },
 ];
 
 export default function ResultsPage() {

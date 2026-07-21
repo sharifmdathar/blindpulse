@@ -16,20 +16,24 @@ export interface UseWalletReturn {
   connect: () => Promise<void>;
   disconnect: () => void;
   status: WalletState;
+  error: string | null;
 }
 
 export function useWallet(): UseWalletReturn {
   const [address, setAddress] = useState<string | null>(null);
   const [status, setStatus] = useState<WalletState>("disconnected");
+  const [error, setError] = useState<string | null>(null);
 
   const connect = useCallback(async () => {
     setStatus("connecting");
+    setError(null);
     try {
       const addr = await wallet.connect();
       setAddress(addr);
       setStatus("connected");
-    } catch {
+    } catch (err) {
       setStatus("disconnected");
+      setError(err instanceof Error ? err.message : "Failed to connect wallet");
     }
   }, []);
 
@@ -50,5 +54,6 @@ export function useWallet(): UseWalletReturn {
     connect,
     disconnect,
     status,
+    error,
   };
 }
