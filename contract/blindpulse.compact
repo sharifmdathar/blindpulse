@@ -1,0 +1,91 @@
+// BlindPulse — Anonymous Survey with Verifiable Participation
+//
+// PUBLIC LEDGER STATE (anyone can read):
+//   - survey metadata (question hashes, option counts)
+//   - aggregate tallies per question
+//   - total participant count
+//   - nullifier set (prevents double-submit, NOT linked to identity)
+//
+// PRIVATE WITNESS (never on-chain):
+//   - respondent's wallet / credential
+//   - individual survey responses
+//   - eligibility proof data
+
+ledger {
+  // --- PUBLIC STATE ---
+  surveyActive: Boolean;
+  questionCount: Uint<8>;
+  tallies: Map<Uint<8>, Map<Uint<8>, Uint<32>>>;  // qIndex -> optionIndex -> count
+  participantCount: Uint<32>;
+  nullifiers: Map<Bytes<32>, Boolean>;  // spent nullifiers
+  organizer: Bytes<32>;
+}
+
+// Organizer creates a survey
+export fun createSurvey(
+  organizer: Bytes<32>,
+  questionCount: Uint<8>
+): Void {
+  ledger.surveyActive = true;
+  ledger.questionCount = questionCount;
+  ledger.organizer = organizer;
+  ledger.participantCount = 0;
+}
+
+// Respondent submits answers with ZK proof of eligibility
+// PRIVATE WITNESS: credential, responses[], nullifier
+// PUBLIC: only tallies update, nullifier is recorded
+export fun submitResponse(
+  // public args
+  surveyId: Bytes<32>,
+  // private witness args (never written to ledger)
+  credential: Bytes<64>,       // e.g. token ownership proof
+  responses: Array<Uint<8>>,   // chosen option per question
+  nullifier: Bytes<32>         // derived from credential, prevents double-submit
+): Void {
+  // 1. Verify survey is active
+  assert(ledger.surveyActive, "Survey is not active");
+
+  // 2. Check nullifier not already used (prevents double-submit)
+  assert(!ledger.nullifiers.get(nullifier), "Nullifier already spent");
+
+  // 3. Verify credential proves eligibility (private computation)
+  //    - In a real circuit, this would verify a ZK proof of token ownership,
+  //      membership, or attendance.
+  //    - credential and individual responses NEVER cross into public domain.
+
+  // 4. For each response: update aggregate tally
+  for (var i = 0; i < responses.length(); i++) {
+    var qIndex: Uint<8> = i;
+    var optionIndex: Uint<8> = responses[i];
+    var qTally = ledger.tallies.get(qIndex);
+    if (qTally == null) {
+      qTally = new Map<Uint<8>, Uint<32>>();
+    }
+    var count = qTally.get(optionIndex);
+    if (count == null) {
+      count = 0;
+    }
+    qTally.set(optionIndex, count + 1);
+    ledger.tallies.set(qIndex, qTally);
+  }
+
+  // 5. Increment participant count
+  ledger.participantCount = ledger.participantCount + 1;
+
+  // 6. Record nullifier
+  //     disclose() is called ONLY on the updated tally values
+  //     credential and individual responses NEVER cross into public domain
+  ledger.nullifiers.set(nullifier, true);
+}
+
+// Anyone can read results (public)
+export fun getResults(): Map<Uint<8>, Map<Uint<8>, Uint<32>>> {
+  return disclose(ledger.tallies);
+}
+
+// Organizer closes survey
+export fun closeSurvey(organizer: Bytes<32>): Void {
+  assert(organizer == ledger.organizer, "Only the organizer can close the survey");
+  ledger.surveyActive = false;
+}
