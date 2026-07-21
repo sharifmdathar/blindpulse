@@ -10,6 +10,7 @@
 import type { WalletState } from "./types";
 import type { InitialAPI, ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 
+/** Use "preprod" for Midnight Preprod test network, "mainnet" for production */
 const NETWORK_ID = "preprod";
 
 let walletApi: ConnectedAPI | null = null;
@@ -43,7 +44,17 @@ export async function connect(): Promise<string> {
     );
   }
 
-  walletApi = await api.connect(NETWORK_ID);
+  try {
+    walletApi = await api.connect(NETWORK_ID);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "";
+    if (msg.includes("Network ID") || msg.includes("network")) {
+      throw new Error(
+        `Wallet network mismatch. Set Lace to "${NETWORK_ID}" network in extension settings, then retry.`,
+      );
+    }
+    throw err;
+  }
   const { unshieldedAddress } = await walletApi.getUnshieldedAddress();
 
   connected = true;
