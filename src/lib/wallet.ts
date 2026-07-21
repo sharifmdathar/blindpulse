@@ -11,7 +11,7 @@ let connected = false;
 
 /** Request Lace connection on Preprod network */
 export async function connect(): Promise<string> {
-  const cardano = (window as Record<string, unknown>).cardano as
+  const cardano = (window as unknown as Record<string, unknown>).cardano as
     | { enable: () => Promise<{ getChangeAddress: () => Promise<string> }> }
     | undefined;
 

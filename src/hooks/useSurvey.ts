@@ -15,10 +15,8 @@ export interface UseSurveyReturn {
   error: string | null;
   createSurvey: (questionCount: number) => Promise<Survey | null>;
   submitResponse: (
-    surveyId: string,
-    credential: Uint8Array,
-    responses: number[],
     nullifier: Uint8Array,
+    responses: number[],
   ) => Promise<void>;
   getResults: (surveyId: string) => Promise<SurveyResults | null>;
 }

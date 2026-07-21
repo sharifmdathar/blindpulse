@@ -4,7 +4,7 @@
  * PRIVATE: Circuit instances manage private witnesses internally.
  */
 
-import { type MidnightProvider } from "@midnight-ntwrk/midnight-js";
+import type { MidnightProvider } from "@midnight-ntwrk/midnight-js-types";
 
 let provider: MidnightProvider | null = null;
 
@@ -17,7 +17,7 @@ export async function initProvider(): Promise<MidnightProvider> {
   //   ?? "http://localhost:6300";
   // provider = await createProvider({ network: "preprod", proofServerUrl });
 
-  return provider as MidnightProvider;
+  return provider as unknown as MidnightProvider;
 }
 
 /** Load compiled circuit from /managed directory */
