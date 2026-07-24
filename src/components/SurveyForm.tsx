@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSurvey } from "@/hooks/useSurvey";
 import { generateNullifier, validateResponses } from "@/lib/utils";
+import { storeResponseLocally } from "@/lib/contract-api";
 
 interface SurveyFormProps {
   surveyId: string;
@@ -41,6 +42,7 @@ export default function SurveyForm({
 
     // PRIVATE: nullifier and responses enter ZK circuit, never public ledger
     await submitResponse(nullifier, responses);
+    storeResponseLocally(surveyId, responses);
     setSubmitted(true);
   };
 

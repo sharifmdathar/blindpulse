@@ -69,6 +69,11 @@ export async function disconnect(): Promise<void> {
   walletApi = null;
 }
 
+/** Get the connected wallet API instance (null if not connected) */
+export function getConnectedApi(): ConnectedAPI | null {
+  return walletApi;
+}
+
 /** Get the connected wallet address (null if not connected) */
 export function getConnectedAddress(): string | null {
   return walletAddress;

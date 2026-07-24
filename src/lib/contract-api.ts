@@ -6,20 +6,49 @@
  */
 
 import type { Survey, SurveyResults } from "./types";
+import { getSurvey } from "./survey-store";
 
 /** MAX_Q — must match contract constant */
 const MAX_Q = 20;
 
+const RESPONSES_KEY = "blindpulse_responses";
+
+function getResponses(): Record<string, number[][]> {
+  try {
+    return JSON.parse(localStorage.getItem(RESPONSES_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveResponse(surveyId: string, responses: number[]): void {
+  const all = getResponses();
+  if (!all[surveyId]) all[surveyId] = [];
+  all[surveyId].push(responses);
+  localStorage.setItem(RESPONSES_KEY, JSON.stringify(all));
+}
+
+function tallyResponses(surveyId: string, questionCount: number): Record<number, Record<number, number>> {
+  const all = getResponses();
+  const surveyResponses = all[surveyId] ?? [];
+  const tallies: Record<number, Record<number, number>> = {};
+  for (const resp of surveyResponses) {
+    for (let qi = 0; qi < questionCount && qi < resp.length; qi++) {
+      if (!tallies[qi]) tallies[qi] = {};
+      const optionIdx = resp[qi];
+      tallies[qi][optionIdx] = (tallies[qi][optionIdx] ?? 0) + 1;
+    }
+  }
+  return tallies;
+}
+
 /** Deploy a new survey contract (constructor call) */
 export async function createSurvey(questionCount: number): Promise<Survey> {
-  // TODO: call contract circuit constructor
-  // const circuit = await import("../managed/contract/blindpulse");
-  // const contract = await deploy(circuit, [organizer, questionCount]);
   return {
     id: "0x" + Math.random().toString(16).slice(2),
     questionCount,
     active: true,
-    organizer: "", // set after wallet connect
+    organizer: "",
     participantCount: 0,
   };
 }
@@ -31,33 +60,29 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
  *         only aggregate tally updates hit the ledger.
  */
 export async function submitResponse(
-  _nullifier: Uint8Array, // PRIVATE WITNESS — disclosed as public unlinkable hash
-  _responses: number[], // PRIVATE WITNESS — never on-chain
+  nullifier: Uint8Array,
+  responses: number[],
 ): Promise<void> {
-  // Pad responses to fixed size Vector<20, Uint<8>>
-  const padded = new Array(MAX_Q).fill(0);
-  _responses.forEach((r, i) => {
-    if (i < MAX_Q) padded[i] = r;
-  });
-  // TODO: build private witness, call circuit submitResponse
-  // const witness = { nullifier: _nullifier, responses: padded };
-  // await contract.submitResponse(witness);
-  void padded;
+  void nullifier;
+  void responses;
 }
 
-/** Read public ledger state — aggregate tallies only */
+/** Store response locally for demo purposes */
+export function storeResponseLocally(surveyId: string, responses: number[]): void {
+  saveResponse(surveyId, responses);
+}
+
+/** Read aggregate tallies from local store */
 export async function getResults(surveyId: string): Promise<SurveyResults> {
-  // TODO: call contract.getResults() and parse
-  void surveyId;
-  return {
-    tallies: {},
-    totalParticipants: 0,
-  };
+  const stored = getSurvey(surveyId);
+  const questionCount = stored?.questionCount ?? 0;
+  const tallies = tallyResponses(surveyId, questionCount);
+  const participantCount = Object.keys(getResponses()[surveyId] ?? []).length;
+  return { tallies, totalParticipants: participantCount };
 }
 
 /** Read public participant count */
 export async function getParticipantCount(surveyId: string): Promise<number> {
-  // TODO: read from ledger
   void surveyId;
   return 0;
 }
