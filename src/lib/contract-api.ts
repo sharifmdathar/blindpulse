@@ -7,6 +7,17 @@
 
 import type { Survey, SurveyResults } from "./types";
 import { getSurvey } from "./survey-store";
+import { getConnectedApi } from "./wallet";
+import {
+  createContractProviders,
+  compiledBlindPulse,
+  contractAddressToHex,
+  ensureMidnightRuntime,
+  hexToContractAddress,
+} from "./midnight";
+import { deployContract, findDeployedContract, getPublicStates } from "@midnight-ntwrk/midnight-js-contracts";
+import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
+import { ledger } from "../../managed/contract/index.js";
 
 /** MAX_Q — must match contract constant */
 const MAX_Q = 20;
@@ -42,15 +53,57 @@ function tallyResponses(surveyId: string, questionCount: number): Record<number,
   return tallies;
 }
 
+function randomId(): string {
+  return "0x" + Math.random().toString(16).slice(2);
+}
+
+/** Read-only indexer provider for on-chain reads without a wallet */
+function readOnlyPublicDataProvider() {
+  const indexerUri =
+    process.env.NEXT_PUBLIC_INDEXER_URL ??
+    "https://indexer.preprod.midnight.network/api/v4/graphql";
+  const indexerWsUri =
+    process.env.NEXT_PUBLIC_INDEXER_WS_URL ??
+    "wss://indexer.preprod.midnight.network/api/v4/graphql/ws";
+  return indexerPublicDataProvider(indexerUri, indexerWsUri);
+}
+
 /** Deploy a new survey contract (constructor call) */
 export async function createSurvey(questionCount: number): Promise<Survey> {
-  return {
-    id: "0x" + Math.random().toString(16).slice(2),
-    questionCount,
-    active: true,
-    organizer: "",
-    participantCount: 0,
-  };
+  const api = getConnectedApi();
+  if (!api) {
+    return {
+      id: randomId(),
+      questionCount,
+      active: true,
+      organizer: "",
+      participantCount: 0,
+    };
+  }
+
+  try {
+    const providers = await createContractProviders(api);
+    const deployed = await deployContract(providers, {
+      compiledContract: compiledBlindPulse,
+      args: [new Uint8Array(32), BigInt(questionCount)],
+    });
+    const contractAddress = deployed.deployTxData.public.contractAddress;
+    return {
+      id: contractAddressToHex(contractAddress),
+      questionCount,
+      active: true,
+      organizer: "",
+      participantCount: 0,
+    };
+  } catch {
+    return {
+      id: randomId(),
+      questionCount,
+      active: true,
+      organizer: "",
+      participantCount: 0,
+    };
+  }
 }
 
 /**
@@ -60,11 +113,26 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
  *         only aggregate tally updates hit the ledger.
  */
 export async function submitResponse(
+  surveyId: string,
   nullifier: Uint8Array,
   responses: number[],
 ): Promise<void> {
-  void nullifier;
-  void responses;
+  const api = getConnectedApi();
+  if (!api) return;
+
+  try {
+    const providers = await createContractProviders(api);
+    const found = await findDeployedContract(providers, {
+      compiledContract: compiledBlindPulse,
+      contractAddress: hexToContractAddress(surveyId),
+    });
+    const padded = Array.from({ length: MAX_Q }, (_, i) =>
+      BigInt(responses[i] ?? 0),
+    );
+    await found.callTx.submitResponse(nullifier, padded);
+  } catch {
+    // On-chain submission unavailable — caller stores locally as fallback.
+  }
 }
 
 /** Store response locally for demo purposes */
@@ -72,16 +140,52 @@ export function storeResponseLocally(surveyId: string, responses: number[]): voi
   saveResponse(surveyId, responses);
 }
 
-/** Read aggregate tallies from local store */
+/** Read aggregate tallies — on-chain when deployed, local store otherwise */
 export async function getResults(surveyId: string): Promise<SurveyResults> {
   const stored = getSurvey(surveyId);
   const questionCount = stored?.questionCount ?? 0;
-  const tallies = tallyResponses(surveyId, questionCount);
-  const participantCount = (getResponses()[surveyId] ?? []).length;
-  return { tallies, totalParticipants: participantCount };
+
+  try {
+    await ensureMidnightRuntime();
+    const states = await getPublicStates(
+      readOnlyPublicDataProvider(),
+      hexToContractAddress(surveyId),
+    );
+    const state = ledger(states.contractState.data);
+    const tallies: Record<number, Record<number, number>> = {};
+    const qCount = Number(state.questionCount);
+    for (let qi = 0; qi < qCount; qi++) {
+      const inner = state.tallies.lookup(BigInt(qi));
+      const row: Record<number, number> = {};
+      for (let oi = 0; oi < MAX_Q; oi++) {
+        if (inner.member(BigInt(oi))) {
+          row[oi] = Number(inner.lookup(BigInt(oi)).read());
+        }
+      }
+      tallies[qi] = row;
+    }
+    return {
+      tallies,
+      totalParticipants: Number(state.participantCount),
+    };
+  } catch {
+    const tallies = tallyResponses(surveyId, questionCount);
+    const participantCount = (getResponses()[surveyId] ?? []).length;
+    return { tallies, totalParticipants: participantCount };
+  }
 }
 
 /** Read public participant count */
 export async function getParticipantCount(surveyId: string): Promise<number> {
-  return (getResponses()[surveyId] ?? []).length;
+  try {
+    await ensureMidnightRuntime();
+    const states = await getPublicStates(
+      readOnlyPublicDataProvider(),
+      hexToContractAddress(surveyId),
+    );
+    const state = ledger(states.contractState.data);
+    return Number(state.participantCount);
+  } catch {
+    return (getResponses()[surveyId] ?? []).length;
+  }
 }

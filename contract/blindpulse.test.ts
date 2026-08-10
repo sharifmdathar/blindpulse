@@ -28,7 +28,7 @@ describe("BlindPulse Contract", () => {
   // Helper: simulate constructor behavior
   function simulateConstructor(
     ledger: ReturnType<typeof createMockLedger>,
-    org: Uint8Array,
+    org: Uint8Array<ArrayBuffer>,
     qCount: number,
   ) {
     ledger.surveyActive = true;
@@ -45,7 +45,7 @@ describe("BlindPulse Contract", () => {
   // Helper: simulate submitResponse behavior
   function simulateSubmitResponse(
     ledger: ReturnType<typeof createMockLedger>,
-    nf: Uint8Array,
+    nf: Uint8Array<ArrayBuffer>,
     responses: number[],
   ): boolean {
     if (!ledger.surveyActive) return false;
