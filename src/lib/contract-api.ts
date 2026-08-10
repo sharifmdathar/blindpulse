@@ -77,12 +77,11 @@ export async function getResults(surveyId: string): Promise<SurveyResults> {
   const stored = getSurvey(surveyId);
   const questionCount = stored?.questionCount ?? 0;
   const tallies = tallyResponses(surveyId, questionCount);
-  const participantCount = Object.keys(getResponses()[surveyId] ?? []).length;
+  const participantCount = (getResponses()[surveyId] ?? []).length;
   return { tallies, totalParticipants: participantCount };
 }
 
 /** Read public participant count */
 export async function getParticipantCount(surveyId: string): Promise<number> {
-  void surveyId;
-  return 0;
+  return (getResponses()[surveyId] ?? []).length;
 }
