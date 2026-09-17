@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSurvey } from "@/hooks/useSurvey";
-import { saveSurvey } from "@/lib/survey-store";
+import { saveSurvey, type StoredSurvey } from "@/lib/survey-store";
 import type { SurveyQuestion } from "@/lib/types";
 import Link from "next/link";
 
@@ -19,6 +19,9 @@ export default function SurveyCreator() {
   ]);
   const [deployedId, setDeployedId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedRegistry, setCopiedRegistry] = useState(false);
+  const [googleFormUrl, setGoogleFormUrl] = useState("");
+  const [savedSurvey, setSavedSurvey] = useState<StoredSurvey | null>(null);
 
   /**
    * Copy the respondent-facing share link (/survey/<id>) to the clipboard.
@@ -95,7 +98,7 @@ export default function SurveyCreator() {
 
     const survey = await createSurvey(questionCount);
     if (survey) {
-      saveSurvey({
+      const stored: StoredSurvey = {
         id: survey.id,
         title: title.trim(),
         questionCount,
@@ -105,12 +108,28 @@ export default function SurveyCreator() {
           options: q.options.map((o) => o.trim()),
         })),
         createdAt: Date.now(),
-      });
+        ...(googleFormUrl.trim().startsWith("https://")
+          ? { googleFormUrl: googleFormUrl.trim() }
+          : {}),
+      };
+      saveSurvey(stored);
+      setSavedSurvey(stored);
       setDeployedId(survey.id);
     }
   };
 
-  if (deployedId) {
+  if (deployedId && savedSurvey) {
+    const registryEntry = {
+      id: savedSurvey.id,
+      title: savedSurvey.title,
+      questionCount: savedSurvey.questionCount,
+      questions: savedSurvey.questions,
+      createdAt: savedSurvey.createdAt,
+      status: "live",
+      ...(savedSurvey.googleFormUrl
+        ? { googleFormUrl: savedSurvey.googleFormUrl }
+        : {}),
+    };
     return (
       <div className="mx-auto max-w-lg rounded-lg border border-green-200 bg-green-50 p-6">
         <p className="mb-2 text-lg font-semibold text-green-800">
@@ -120,7 +139,34 @@ export default function SurveyCreator() {
           Contract ID:{" "}
           <span className="font-mono text-xs">{deployedId}</span>
         </p>
-        <div className="flex gap-3">
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          <p className="font-medium">One manual step to stay shareable:</p>
+          <p className="mt-1">
+            Click below and append the copied JSON to the{" "}
+            <code>surveys</code> array in{" "}
+            <code>public/survey-registry.json</code>, then commit. Until then,
+            other browsers see generic labels on your survey pages.
+          </p>
+        </div>
+        <div className="mb-4 flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(
+                  JSON.stringify(registryEntry, null, 2),
+                );
+                setCopiedRegistry(true);
+                setTimeout(() => setCopiedRegistry(false), 2000);
+              } catch {
+                window.prompt("Copy this registry entry:", JSON.stringify(registryEntry, null, 2));
+              }
+            }}
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+          >
+            {copiedRegistry ? "Copied ✓" : "Copy registry entry"}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-3">
           <Link
             href={`/survey/${deployedId}`}
             className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
@@ -219,10 +265,25 @@ export default function SurveyCreator() {
           ))}
         </div>
 
+        <label className="mt-4 mb-1 block text-sm font-medium text-gray-700">
+          Google Form fallback URL (optional)
+        </label>
+        <input
+          type="url"
+          value={googleFormUrl}
+          onChange={(e) => setGoogleFormUrl(e.target.value)}
+          placeholder="https://docs.google.com/forms/d/e/.../viewform"
+          className="w-full rounded-md border px-3 py-2 text-sm"
+        />
+        <p className="mt-1 mb-4 text-xs text-gray-500">
+          Shown as a wallet-free fallback on the survey page. Responses go to
+          the organizer off-chain — not part of the on-chain anonymous tally.
+        </p>
+
         <button
           onClick={handleCreate}
           disabled={loading || !title.trim()}
-          className="mt-6 w-full rounded-md bg-black px-6 py-2 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
+          className="mt-2 w-full rounded-md bg-black px-6 py-2 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
         >
           {loading ? "Deploying..." : "Deploy Survey Contract"}
         </button>
