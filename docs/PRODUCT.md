@@ -71,10 +71,13 @@ votes in different surveys cannot be correlated.
 ## What's live today
 
 - **Network:** Midnight Preprod
-- **Live survey:** `9b6e0eed1f8a8f2a79ed2db9fe35570e1ad30ab8f8c358c44bc4b7e06ed7eeff`
-  ("App Feedback" — rate 1–5), deployed through the DApp via Lace +
-  Midnight.js, with a clean nullifier set and every vote using the
-  corrected per-wallet derivation
+- **Live survey:** `d9a1605a0ada136ffe075736784a28b6e58c876ad53825fe1be0d23dfda5f132`
+  ("BlindPulse Beta Feedback" — 3 questions), deployed through the DApp
+  via Lace + Midnight.js on the organizer-gated contract: the deploying
+  wallet's coin public key is recorded as organizer and `closeSurvey`
+  asserts the caller's (private) coin key against it in-circuit. A
+  wallet-free Google Form fallback is advertised alongside the ZK form
+  (organizer-collected, outside the ZK guarantee).
 - **Verified flows:** wallet connect → deploy → anonymous submit →
   double-vote rejection → live aggregate results, all exercised on-chain
   end-to-end
@@ -90,8 +93,8 @@ GitHub Actions.
 
 ## Roadmap
 
-1. **Next:** survey close UX in the DApp; per-survey share pages with
-   embedded metadata; registry auto-generation at deploy time
+1. **Next:** per-survey share pages with embedded metadata;
+   registry auto-write at deploy time (entry is copy-paste today)
 2. **Then:** eligibility proofs beyond one-wallet-one-vote (token
    holdings, membership, attendance)
 3. **Level 5:** 50 Preprod users with an open feedback loop

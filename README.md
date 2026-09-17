@@ -77,13 +77,19 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 
 ## Contract Address (Preprod)
 
-- **Contract address:** `9b6e0eed1f8a8f2a79ed2db9fe35570e1ad30ab8f8c358c44bc4b7e06ed7eeff`
-  (live "App Feedback" survey — 1 question, rate 1–5 — verify with
-  `CONTRACT_ADDRESS=9b6e… bun scripts/verify-deploy.ts`)
-  Deployed from a clean nullifier set after the per-wallet BLAKE2b
-  nullifier fix, so every recorded vote uses the correct derivation.
-  Survey metadata (title, question, options) lives off-chain in the
-  organizer's browser; the contract ID links it to on-chain tallies.
+- **Contract address:** `d9a1605a0ada136ffe075736784a28b6e58c876ad53825fe1be0d23dfda5f132`
+  (live "BlindPulse Beta Feedback" survey — 3 questions, deployed on the
+  organizer-gated contract — verify with `CONTRACT_ADDRESS=d9a160… bun
+  scripts/verify-deploy.ts`). The constructor recorded the deploying
+  wallet's coin public key as organizer, so `closeSurvey` is now
+  in-circuit gated to that wallet. A Google Form fallback for
+  wallet-free respondents is advertised on the survey pages
+  (<https://forms.gle/tSfuc3mhU87XQjh68>); those responses are
+  organizer-collected off-chain, outside the zero-knowledge guarantee.
+- Earlier deployment (superseded): `9b6e0eed1f8a8f2a79ed2db9fe35570e1ad30ab8f8c358c44bc4b7e06ed7eeff`
+  ("App Feedback" — 1 question, rate 1–5). Deployed from a clean
+  nullifier set after the per-wallet BLAKE2b nullifier fix; organizer
+  recorded as zeros (pre-gate contract), so close is not gated there.
 - Earlier deployment (superseded): `92ef920564c1b67d8081f6eea8a880c7ac0904d601396ef87c16859b29ff8087`
   — predates the nullifier fix: its nullifier set contains the legacy
   zero-byte stub digest, so wallets that voted before the fix could be

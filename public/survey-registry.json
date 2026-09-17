@@ -15,6 +15,36 @@
       ],
       "createdAt": 1789663269472,
       "status": "live"
+    },
+    {
+      "id": "d9a1605a0ada136ffe075736784a28b6e58c876ad53825fe1be0d23dfda5f132",
+      "title": "BlindPulse Beta Feedback",
+      "questionCount": 3,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Overall, how would you rate BlindPulse?",
+          "options": ["1", "2", "3", "4", "5"]
+        },
+        {
+          "index": 1,
+          "text": "Which feature do you value most?",
+          "options": [
+            "Privacy (answers hidden)",
+            "Verifiability (counts provable)",
+            "Simplicity",
+            "Anonymity"
+          ]
+        },
+        {
+          "index": 2,
+          "text": "How likely are you to recommend BlindPulse?",
+          "options": ["1", "2", "3", "4", "5"]
+        }
+      ],
+      "createdAt": 1789667295642,
+      "status": "live",
+      "googleFormUrl": "https://forms.gle/tSfuc3mhU87XQjh68"
     }
   ]
 }

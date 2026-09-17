@@ -50,6 +50,16 @@ async function main(): Promise<void> {
   console.log("surveyActive: ", state.surveyActive);
   console.log("questionCount:", questionCount);
   console.log("participants: ", participantCount);
+  // organizer is the coin public key recorded at deploy; closeSurvey
+  // asserts the caller's (private) coin key against it. All zeros means a
+  // pre-gate deploy where close could not be organizer-checked.
+  const organizerHex = Array.from(state.organizer as unknown as Uint8Array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  console.log(
+    "organizer:    ",
+    organizerHex === "0".repeat(64) ? "(all zeros — pre-gate deploy)" : organizerHex,
+  );
 
   const tallies: Record<number, Record<number, number>> = {};
   for (let qi = 0; qi < questionCount; qi++) {
