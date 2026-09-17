@@ -1,0 +1,20 @@
+{
+  "_comment": "BlindPulse public survey registry. Off-chain metadata for deployed surveys so any browser can restore titles/questions/options (the chain only stores aggregate tallies keyed by contract address). Add future deployments here with a PR or by regenerating this file.",
+  "network": "preprod",
+  "surveys": [
+    {
+      "id": "9b6e0eed1f8a8f2a79ed2db9fe35570e1ad30ab8f8c358c44bc4b7e06ed7eeff",
+      "title": "App Feedback",
+      "questionCount": 1,
+      "questions": [
+        {
+          "index": 0,
+          "text": "Rate this app on a scale of 1 to 5",
+          "options": ["1", "2", "3", "4", "5"]
+        }
+      ],
+      "createdAt": 1789663269472,
+      "status": "live"
+    }
+  ]
+}

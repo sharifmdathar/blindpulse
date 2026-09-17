@@ -10,8 +10,10 @@
  * Survey discovery is intentionally off-chain: the chain stores aggregate
  * tallies under contract addresses, and there is no on-chain registry of
  * "surveys created by me", so the organizer's browser (localStorage) is the
- * source of the list. Anyone opening the dashboard on a machine that has
- * never seen a survey can still paste a contract address to add it.
+ * source of the list. Two recovery paths for any other browser:
+ *   - "Add by address": paste a contract address manually, or
+ *   - "Restore registry": merge the public /survey-registry.json shipped
+ *     with the app (titles/questions/options for known deployments).
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +26,7 @@ type ChainStatus = {
   active?: boolean;
   participants?: number;
   live?: boolean; // found on-chain via indexer
+  demo?: boolean; // local demo-mode id (never deployed)
 };
 
 const HEX32 = /^(0x)?[0-9a-fA-F]{64}$/;
@@ -38,6 +41,12 @@ function SurveyRow({ survey }: { survey: StoredSurvey }) {
   const [status, setStatus] = useState<ChainStatus>({ loading: true });
 
   useEffect(() => {
+    // Demo-mode ids ("0x…" random) never reached the chain — skip the lookup
+    // instead of showing a confusing "not found on-chain" state.
+    if (survey.id.startsWith("0x")) {
+      setStatus({ loading: false, live: false, demo: true });
+      return;
+    }
     let cancelled = false;
     getSurveyMetadata(survey.id).then((meta) => {
       if (cancelled) return;
@@ -59,6 +68,10 @@ function SurveyRow({ survey }: { survey: StoredSurvey }) {
 
   const badge = status.loading ? (
     <span className="text-xs text-gray-400">checking chain…</span>
+  ) : status.demo ? (
+    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+      local demo · never deployed
+    </span>
   ) : status.live === false ? (
     <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
       not found on-chain
@@ -88,7 +101,9 @@ function SurveyRow({ survey }: { survey: StoredSurvey }) {
             ? "…"
             : status.live
               ? `${status.participants ?? 0} participant${(status.participants ?? 0) === 1 ? "" : "s"}`
-              : "No on-chain state found for this address."}
+              : status.demo
+                ? "Created without a wallet — responses tallied in this browser only."
+                : "No on-chain state found for this address."}
           {" · "}
           {survey.questionCount} question
           {survey.questionCount !== 1 ? "s" : ""}
@@ -122,6 +137,8 @@ export default function DashboardPage() {
   const [adding, setAdding] = useState(false);
   const [paste, setPaste] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setSurveys(getSurveys());
@@ -155,6 +172,51 @@ export default function DashboardPage() {
     setAdding(false);
   };
 
+  /**
+   * Merge the public registry (public/survey-registry.json) into this
+   * browser's list. Never overwrites an existing local entry.
+   * PUBLIC: registry data is off-chain metadata by design.
+   */
+  const restoreFromRegistry = async () => {
+    setRestoring(true);
+    setRestoreMsg(null);
+    try {
+      const res = await fetch("/survey-registry.json");
+      if (!res.ok) throw new Error(`registry fetch failed (${res.status})`);
+      const data = await res.json();
+      const entries: Array<Partial<StoredSurvey>> = Array.isArray(
+        data.surveys,
+      )
+        ? data.surveys
+        : [];
+      const known = getSurveys();
+      let added = 0;
+      for (const s of entries) {
+        if (!s?.id || known[s.id]) continue;
+        saveSurvey({
+          id: s.id,
+          title: s.title ?? `Survey ${s.id.slice(0, 10)}…`,
+          questionCount: s.questionCount ?? s.questions?.length ?? 0,
+          questions: Array.isArray(s.questions) ? s.questions : [],
+          createdAt: typeof s.createdAt === "number" ? s.createdAt : Date.now(),
+        });
+        added += 1;
+      }
+      setSurveys(getSurveys());
+      setRestoreMsg(
+        added > 0
+          ? `Restored ${added} survey${added === 1 ? "" : "s"} from the public registry.`
+          : "All registry surveys are already listed.",
+      );
+    } catch (err) {
+      setRestoreMsg(
+        `Restore failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    } finally {
+      setRestoring(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
@@ -165,6 +227,13 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={restoreFromRegistry}
+            disabled={restoring}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:text-gray-400"
+          >
+            {restoring ? "Restoring…" : "Restore registry"}
+          </button>
           <button
             onClick={() => setAdding((v) => !v)}
             className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
@@ -179,6 +248,12 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {restoreMsg && (
+        <p className="mb-4 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+          {restoreMsg}
+        </p>
+      )}
 
       {adding && (
         <div className="mb-6 rounded-lg border p-4">
@@ -218,8 +293,10 @@ export default function DashboardPage() {
             Deploy one from the{" "}
             <Link href="/create" className="underline hover:text-gray-600">
               create page
-            </Link>{" "}
-            — it will appear here with live on-chain status.
+            </Link>
+            , paste a contract address above, or click{" "}
+            <span className="font-medium">Restore registry</span> to pull the
+            publicly known deployments.
           </p>
         </div>
       ) : (
