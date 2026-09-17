@@ -18,6 +18,7 @@ import {
 } from "@/lib/survey-store";
 import { getSurveyMetadata } from "@/lib/contract-api";
 import SurveyForm from "@/components/SurveyForm";
+import GoogleFormFallback from "@/components/GoogleFormFallback";
 
 type LiveSurvey = {
   entry: SurveyRegistryEntry;
@@ -103,6 +104,10 @@ export default function FeedbackPage() {
       <p className="mb-6 text-sm text-gray-500">
         One anonymous response per wallet. Results are public on the ledger.
       </p>
+
+      {live.entry.googleFormUrl && (
+        <GoogleFormFallback url={live.entry.googleFormUrl} />
+      )}
 
       {!isConnected ? (
         <div className="rounded-lg border p-6 text-center">

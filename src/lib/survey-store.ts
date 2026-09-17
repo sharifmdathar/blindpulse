@@ -15,6 +15,8 @@ export interface StoredSurvey {
   questionCount: number;
   questions: SurveyQuestion[];
   createdAt: number;
+  /** Optional wallet-free fallback: organizer-run Google Form (off-chain). */
+  googleFormUrl?: string;
 }
 
 export function saveSurvey(survey: StoredSurvey): void {
@@ -35,6 +37,8 @@ export interface SurveyRegistryEntry {
   questions?: SurveyQuestion[];
   createdAt?: number;
   status?: string;
+  /** Optional wallet-free fallback: organizer-run Google Form (off-chain). */
+  googleFormUrl?: string;
 }
 
 /** Top-level shape of the public registry file. */
@@ -81,6 +85,7 @@ export function applyRegistryEntry(
     questions: Array.isArray(entry.questions) ? entry.questions : [],
     createdAt:
       typeof entry.createdAt === "number" ? entry.createdAt : Date.now(),
+    ...(entry.googleFormUrl ? { googleFormUrl: entry.googleFormUrl } : {}),
   };
   saveSurvey(stored);
   return stored;

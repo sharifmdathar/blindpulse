@@ -25,6 +25,18 @@ describe("BlindPulse Contract", () => {
     };
   }
 
+  // Helper: simulate closeSurvey behavior (organizer-gated)
+  function simulateCloseSurvey(
+    ledger: ReturnType<typeof createMockLedger>,
+    caller: Uint8Array<ArrayBuffer>,
+  ): boolean {
+    if (Array.from(caller).join(",") !== Array.from(ledger.organizer).join(",")) {
+      throw new Error("Only the organizer can close the survey");
+    }
+    ledger.surveyActive = false;
+    return true;
+  }
+
   // Helper: simulate constructor behavior
   function simulateConstructor(
     ledger: ReturnType<typeof createMockLedger>,
@@ -47,6 +59,7 @@ describe("BlindPulse Contract", () => {
     ledger: ReturnType<typeof createMockLedger>,
     nf: Uint8Array<ArrayBuffer>,
     responses: number[],
+    caller: Uint8Array<ArrayBuffer> = new Uint8Array(32),
   ): boolean {
     if (!ledger.surveyActive) return false;
 
@@ -150,20 +163,32 @@ describe("BlindPulse Contract", () => {
     expect(ledger.participantCount).toBe(2);
   });
 
-  // Test 6: closeSurvey deactivates the survey
-  test("closeSurvey deactivates the survey", () => {
+  // Test 6: closeSurvey is organizer-gated and deactivates the survey
+  test("closeSurvey deactivates the survey (organizer only)", () => {
     const ledger = createMockLedger();
-    simulateConstructor(ledger, organizer, questionCount);
+    const outsider = new Uint8Array(32).fill(9);
+    const coinPkHex = Array.from(organizer)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
 
+    // Constructor must record the deploying wallet as organizer (public)
+    simulateConstructor(ledger, organizer, questionCount);
+    expect(ledger.organizer).toEqual(organizer);
     expect(ledger.surveyActive).toBe(true);
 
-    // Close the survey
-    ledger.surveyActive = false;
+    // A non-organizer wallet's close attempt is rejected in-circuit
+    expect(() => simulateCloseSurvey(ledger, outsider)).toThrow(
+      /Only the organizer/,
+    );
+    expect(ledger.surveyActive).toBe(true); // unchanged
+
+    // The organizer wallet's close succeeds
+    expect(simulateCloseSurvey(ledger, organizer)).toBe(true);
     expect(ledger.surveyActive).toBe(false);
 
-    // Verify no more responses can be submitted
+    // And a closed survey accepts no further responses
     const responses = new Array(20).fill(0);
-    const result = simulateSubmitResponse(ledger, nullifier, responses);
-    expect(result).toBe(false);
+    expect(simulateSubmitResponse(ledger, nullifier, responses)).toBe(false);
+    expect(coinPkHex).toHaveLength(64); // coin pk is the 32-byte organizer value
   });
 });

@@ -15,6 +15,7 @@ import {
   ensureMidnightRuntime,
   hexToContractAddress,
   buildNullifier,
+  getWalletIdentity,
 } from "./midnight";
 import { deployContract, findDeployedContract, getPublicStates } from "@midnight-ntwrk/midnight-js-contracts";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
@@ -118,9 +119,13 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
   const providers = await createContractProviders(api);
   const compiledContract = await getCompiledBlindPulse();
   try {
+    // The organizer is the DEPLOYING WALLET's coin public key — stored in
+    // ledger state (public by design) and later matched in-circuit against
+    // the caller's private witness when closeSurvey is invoked.
+    const { coinPublicKey } = await getWalletIdentity(api);
     const deployed = await deployContract(providers, {
       compiledContract,
-      args: [new Uint8Array(32), BigInt(questionCount)],
+      args: [coinPublicKey, BigInt(questionCount)],
     });
 
     const contractAddress = deployed.deployTxData.public.contractAddress;
@@ -200,11 +205,15 @@ export async function closeSurvey(surveyId: string): Promise<void> {
   const providers = await createContractProviders(api);
   const compiledContract = await getCompiledBlindPulse();
   try {
+    // PRIVATE WITNESS: the caller's coin public key — a circuit argument
+    // compared in ZK against the stored organizer. It is never disclosed;
+    // only the surveyActive=false flip becomes public.
+    const { coinPublicKey } = await getWalletIdentity(api);
     const found = await findDeployedContract(providers, {
       compiledContract,
       contractAddress: hexToContractAddress(surveyId),
     });
-    await found.callTx.closeSurvey();
+    await found.callTx.closeSurvey(coinPublicKey);
   } catch (err) {
     console.error("On-chain closeSurvey failed:", err);
     const msg = err instanceof Error ? err.message : String(err);

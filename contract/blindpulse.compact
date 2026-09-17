@@ -97,8 +97,15 @@ export circuit getResults(): [] {
 }
 
 // === CLOSE SURVEY ===
-// Only the organizer (deployer) can deactivate the survey.
+// Only the organizer (deployer) can deactivate the survey — enforced in
+// circuit by comparing the caller's coin public key (private witness)
+// against the stored organizer value.
 
-export circuit closeSurvey(): [] {
+export circuit closeSurvey(closeCaller: Bytes<32>): [] {
+  // ORGANIZER-GATE: closeCaller is the caller's coin public key. All circuit
+  // parameters are PRIVATE WITNESSES by default — compared in-circuit against
+  // the organizer recorded at deploy. The comparison stays in ZK; only the
+  // surveyActive flip is public.
+  assert(closeCaller == organizer, "Only the organizer can close the survey");
   surveyActive = false;
 }

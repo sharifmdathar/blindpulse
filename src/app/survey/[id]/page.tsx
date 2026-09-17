@@ -6,6 +6,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { restoreSurveyFromRegistry } from "@/lib/survey-store";
 import { getSurveyMetadata } from "@/lib/contract-api";
 import SurveyForm from "@/components/SurveyForm";
+import GoogleFormFallback from "@/components/GoogleFormFallback";
 import type { StoredSurvey } from "@/lib/survey-store";
 import Link from "next/link";
 
@@ -109,6 +110,24 @@ export default function SurveyPage() {
     );
   }
 
+  if (survey.googleFormUrl) {
+    return (
+      <div>
+        <h1 className="mb-2 text-xl font-semibold">{survey.title}</h1>
+        <p className="mb-6 text-sm text-gray-500">
+          {survey.questions.length} question{" "}
+          {survey.questions.length !== 1 ? "(s)" : ""}
+        </p>
+        <GoogleFormFallback url={survey.googleFormUrl} />
+        <SurveyForm
+          surveyId={surveyId}
+          questionCount={survey.questions.length}
+          questions={survey.questions}
+        />
+      </div>
+    );
+  }
+
   if (status === "connecting") {
     return (
       <div className="py-12 text-center text-gray-500">
@@ -138,8 +157,10 @@ export default function SurveyPage() {
     <div>
       <h1 className="mb-2 text-xl font-semibold">{survey.title}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        {survey.questions.length} question{" "}{survey.questions.length !== 1 ? "(s)" : ""}
+        {survey.questions.length} question{" "}
+        {survey.questions.length !== 1 ? "(s)" : ""}
       </p>
+      {survey.googleFormUrl && <GoogleFormFallback url={survey.googleFormUrl} />}
       <SurveyForm
         surveyId={surveyId}
         questionCount={survey.questions.length}
