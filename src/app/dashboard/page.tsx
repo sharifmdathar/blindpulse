@@ -28,6 +28,7 @@ import {
   type StoredSurvey,
 } from "@/lib/survey-store";
 import { closeSurvey, getSurveyMetadata } from "@/lib/contract-api";
+import FeedbackLoopPanel from "@/components/FeedbackLoopPanel";
 
 type ChainStatus = {
   loading: boolean;
@@ -407,6 +408,8 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      <FeedbackLoopPanel />
 
       {restoreMsg && (
         <p className="mb-4 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">

@@ -134,5 +134,5 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 | 2     | ✅     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
 | 3     | ✅     | 3+ tests passing (19), CI/CD, 10+ commits, privacy model section         |
 | 4     | ✅     | MVP live on Preprod, docs, CI/CD, public product profile                 |
-| 5     | ⏳     | 50 Preprod users, feedback loop, mentor approval                         |
+| 5     | 🚧     | [Level 5 runbook](docs/LEVEL5.md): recruitment kit, feedback loop panel, mentor demo script |
 | 6     | ⏳     | Mainnet deploy, 20 real users, brand assets                              |

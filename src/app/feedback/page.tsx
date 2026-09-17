@@ -19,6 +19,7 @@ import {
 import { getSurveyMetadata } from "@/lib/contract-api";
 import SurveyForm from "@/components/SurveyForm";
 import GoogleFormFallback from "@/components/GoogleFormFallback";
+import NewcomerHints from "@/components/NewcomerHints";
 
 type LiveSurvey = {
   entry: SurveyRegistryEntry;
@@ -110,18 +111,21 @@ export default function FeedbackPage() {
       )}
 
       {!isConnected ? (
-        <div className="rounded-lg border p-6 text-center">
-          <p className="mb-4 text-gray-600">
-            Connect your Lace wallet to submit anonymously — your identity
-            stays in shadow; only your answer is counted.
-          </p>
-          <button
-            onClick={connect}
-            disabled={status === "connecting"}
-            className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
-          >
-            {status === "connecting" ? "Connecting…" : "Connect Wallet"}
-          </button>
+        <div>
+          <NewcomerHints />
+          <div className="rounded-lg border p-6 text-center">
+            <p className="mb-4 text-gray-600">
+              Connect your wallet to submit anonymously — your identity
+              stays in shadow; only your answer is counted.
+            </p>
+            <button
+              onClick={connect}
+              disabled={status === "connecting"}
+              className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
+            >
+              {status === "connecting" ? "Connecting…" : "Connect Wallet"}
+            </button>
+          </div>
         </div>
       ) : (
         <SurveyForm surveyId={id} questionCount={questions.length} questions={questions} />

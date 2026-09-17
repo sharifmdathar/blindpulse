@@ -7,6 +7,7 @@ import { restoreSurveyFromRegistry } from "@/lib/survey-store";
 import { getSurveyMetadata } from "@/lib/contract-api";
 import SurveyForm from "@/components/SurveyForm";
 import GoogleFormFallback from "@/components/GoogleFormFallback";
+import NewcomerHints from "@/components/NewcomerHints";
 import type { StoredSurvey } from "@/lib/survey-store";
 import Link from "next/link";
 
@@ -138,17 +139,23 @@ export default function SurveyPage() {
 
   if (!isConnected) {
     return (
-      <div className="py-12 text-center">
-        <h1 className="mb-2 text-2xl font-semibold">{survey.title}</h1>
-        <p className="mb-6 text-gray-600">
-          Connect your wallet to verify your eligibility and submit anonymously.
-        </p>
-        <button
-          onClick={connect}
-          className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800"
-        >
-          Connect Wallet
-        </button>
+      <div className="py-12">
+        <h1 className="mb-2 text-2xl font-semibold text-center">{survey.title}</h1>
+        <div className="mx-auto max-w-lg">
+          <NewcomerHints />
+          <div className="rounded-lg border p-6 text-center">
+            <p className="mb-4 text-gray-600">
+              Connect your wallet to verify your eligibility and submit
+              anonymously.
+            </p>
+            <button
+              onClick={connect}
+              className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800"
+            >
+              Connect Wallet
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
