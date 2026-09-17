@@ -18,7 +18,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getSurveys, saveSurvey, type StoredSurvey } from "@/lib/survey-store";
+import {
+  clearSurveys,
+  getSurveys,
+  removeSurvey,
+  saveSurvey,
+  type StoredSurvey,
+} from "@/lib/survey-store";
 import { getSurveyMetadata } from "@/lib/contract-api";
 
 type ChainStatus = {
@@ -37,8 +43,15 @@ function normalizeAddress(raw: string): string | null {
 }
 
 /** One known survey row: off-chain title + live on-chain counters. */
-function SurveyRow({ survey }: { survey: StoredSurvey }) {
+function SurveyRow({
+  survey,
+  onRemove,
+}: {
+  survey: StoredSurvey;
+  onRemove: (id: string) => void;
+}) {
   const [status, setStatus] = useState<ChainStatus>({ loading: true });
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     // Demo-mode ids ("0x…" random) never reached the chain — skip the lookup
@@ -109,7 +122,7 @@ function SurveyRow({ survey }: { survey: StoredSurvey }) {
           {survey.questionCount !== 1 ? "s" : ""}
         </p>
       </div>
-      <div className="ml-4 flex shrink-0 gap-2">
+      <div className="ml-4 flex shrink-0 items-center gap-2">
         <Link
           href={`/results/${survey.id}`}
           className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
@@ -123,6 +136,30 @@ function SurveyRow({ survey }: { survey: StoredSurvey }) {
           >
             Take Survey
           </Link>
+        )}
+        {confirming ? (
+          <span className="flex items-center gap-1">
+            <button
+              onClick={() => onRemove(survey.id)}
+              className="rounded-md bg-red-600 px-2 py-1.5 text-xs text-white hover:bg-red-700"
+            >
+              Remove
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="px-1 text-xs text-gray-500 hover:text-gray-700"
+            >
+              keep
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirming(true)}
+            title="Remove from this list (does not touch the chain)"
+            className="px-1 text-lg leading-none text-gray-300 hover:text-red-500"
+          >
+            ×
+          </button>
         )}
       </div>
     </div>
@@ -139,6 +176,7 @@ export default function DashboardPage() {
   const [addError, setAddError] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
     setSurveys(getSurveys());
@@ -170,6 +208,19 @@ export default function DashboardPage() {
     setPaste("");
     setAddError(null);
     setAdding(false);
+  };
+
+  /** Remove one row locally; the chain keeps its tallies either way. */
+  const removeRow = (id: string) => {
+    removeSurvey(id);
+    setSurveys(getSurveys());
+  };
+
+  /** Clear the whole list locally; on-chain state is untouched. */
+  const clearAll = () => {
+    clearSurveys();
+    setSurveys(getSurveys());
+    setConfirmClear(false);
   };
 
   /**
@@ -227,6 +278,30 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {sorted.length > 0 &&
+            (confirmClear ? (
+              <span className="flex items-center gap-1">
+                <button
+                  onClick={clearAll}
+                  className="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700"
+                >
+                  Clear all
+                </button>
+                <button
+                  onClick={() => setConfirmClear(false)}
+                  className="px-1 text-xs text-gray-500 hover:text-gray-700"
+                >
+                  keep
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmClear(true)}
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Clear list
+              </button>
+            ))}
           <button
             onClick={restoreFromRegistry}
             disabled={restoring}
@@ -302,7 +377,7 @@ export default function DashboardPage() {
       ) : (
         <div className="space-y-3">
           {sorted.map((s) => (
-            <SurveyRow key={s.id} survey={s} />
+            <SurveyRow key={s.id} survey={s} onRemove={removeRow} />
           ))}
         </div>
       )}

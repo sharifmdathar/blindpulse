@@ -27,6 +27,25 @@ export function getSurvey(id: string): StoredSurvey | undefined {
   return getSurveys()[id];
 }
 
+/**
+ * Remove one survey from the local registry.
+ * PUBLIC: affects only this browser's off-chain metadata copy — on-chain
+ * tallies are untouched and the survey can be re-added by address.
+ */
+export function removeSurvey(id: string): void {
+  const all = getSurveys();
+  delete all[id];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+}
+
+/**
+ * Remove every survey from the local registry.
+ * PUBLIC: same scope as removeSurvey — local metadata only.
+ */
+export function clearSurveys(): void {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 export function getSurveys(): Record<string, StoredSurvey> {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
