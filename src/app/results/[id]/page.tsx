@@ -53,10 +53,10 @@ export default function ResultsPage() {
             No survey with ID {surveyId} found.
           </p>
           <Link
-            href="/"
+            href="/dashboard"
             className="rounded-md bg-black px-4 py-2 text-sm text-white"
           >
-            Home
+            Go to Dashboard
           </Link>
         </div>
       );

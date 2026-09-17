@@ -24,10 +24,10 @@ export default function Home() {
             Create Survey
           </Link>
           <Link
-            href="/results/example"
+            href="/dashboard"
             className="rounded-md border border-gray-300 px-6 py-3 text-sm text-gray-700 hover:bg-gray-50"
           >
-            View Results
+            View Dashboard
           </Link>
         </div>
       </section>

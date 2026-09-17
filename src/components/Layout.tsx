@@ -1,3 +1,4 @@
+import Link from "next/link";
 import WalletConnect from "./WalletConnect";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -5,9 +6,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <a href="/" className="text-lg font-bold">
-            BlindPulse
-          </a>
+          <div className="flex items-center gap-6">
+            <a href="/" className="text-lg font-bold">
+              BlindPulse
+            </a>
+            <nav className="flex items-center gap-4 text-sm">
+              <Link href="/dashboard" className="text-gray-600 hover:text-black">
+                Dashboard
+              </Link>
+              <Link href="/create" className="text-gray-600 hover:text-black">
+                Create
+              </Link>
+            </nav>
+          </div>
           <WalletConnect />
         </div>
       </header>
