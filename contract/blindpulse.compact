@@ -30,15 +30,25 @@ export ledger organizer: Bytes<32>;
 
 // === CONSTRUCTOR ===
 // Called once on deploy. All params are private; we disclose() what enters public state.
+//
+// MAX_OPTIONS = 20: every (question, option) tally cell is pre-created here so
+// submitResponse never needs Map.insert with a witness-derived key (which the
+// compiler rightly rejects as a potential answer disclosure, and which would
+// otherwise crash on first vote with "expected a cell, received null").
 
 constructor(org: Bytes<32>, qCount: Uint<8>) {
   surveyActive = disclose(true);
   questionCount = disclose(qCount);
   organizer = disclose(org);
 
-  // Initialize tally maps for each possible question index
+  // Fully initialize the tally structure: inner map per question,
+  // zero Counter cell per option (keys are loop constants, not witnesses).
   for (const i of 0..20) {
-    tallies.insert(i as Uint<8>, default<Map<Uint<8>, Counter>>);
+    const qIdx = i as Uint<8>;
+    tallies.insert(qIdx, default<Map<Uint<8>, Counter>>);
+    for (const o of 0..20) {
+      tallies.lookup(qIdx).insert(o as Uint<8>, default<Counter>);
+    }
   }
 }
 
@@ -61,7 +71,11 @@ export circuit submitResponse(
   // Record nullifier (unlinkable one-way hash)
   nullifiers.insert(disclose(nullifier));
 
-  // Update tallies for each question; loop bound is compile-time constant
+  // Update tallies for each question; loop bound is compile-time constant.
+  // The option index stays PRIVATE: it is only ever used in in-circuit
+  // lookup paths against cells pre-created by the constructor — never
+  // inserted, never membership-checked, never disclosed.
+  // NOTE: requires option index < MAX_OPTIONS (20) — enforced in the UI.
   for (const i of 0..20) {
     const qIdx = i as Uint<8>;
     if (qIdx < questionCount) {

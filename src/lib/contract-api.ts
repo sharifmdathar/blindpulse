@@ -150,9 +150,9 @@ export async function submitResponse(
   const api = getConnectedApi();
   if (!api) return;
 
+  const providers = await createContractProviders(api);
+  const compiledContract = await getCompiledBlindPulse();
   try {
-    const providers = await createContractProviders(api);
-    const compiledContract = await getCompiledBlindPulse();
     const found = await findDeployedContract(providers, {
       compiledContract,
       contractAddress: hexToContractAddress(surveyId),
@@ -162,12 +162,11 @@ export async function submitResponse(
     );
     await found.callTx.submitResponse(nullifier, padded);
   } catch (err) {
-    // On-chain submission unavailable — caller stores locally as fallback.
-    // Surface the real cause in the console so failures are never silent.
-    console.error(
-      "On-chain submitResponse failed, falling back to local store:",
-      err,
-    );
+    // With a wallet connected, an on-chain failure must be visible — never
+    // masquerade as success while only storing locally.
+    console.error("On-chain submitResponse failed:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Response submission failed: ${msg}`, { cause: err });
   }
 }
 
@@ -195,7 +194,11 @@ export async function getResults(surveyId: string): Promise<SurveyResults> {
       const row: Record<number, number> = {};
       for (let oi = 0; oi < MAX_Q; oi++) {
         if (inner.member(BigInt(oi))) {
-          row[oi] = Number(inner.lookup(BigInt(oi)).read());
+          const count = Number(inner.lookup(BigInt(oi)).read());
+          // All MAX_Q option cells are pre-created by the constructor, so
+          // member() is always true — only surface options with votes.
+          // (Zero entries are rendered client-side from stored metadata.)
+          if (count > 0) row[oi] = count;
         }
       }
       tallies[qi] = row;
@@ -208,6 +211,40 @@ export async function getResults(surveyId: string): Promise<SurveyResults> {
     const tallies = tallyResponses(surveyId, questionCount);
     const participantCount = (getResponses()[surveyId] ?? []).length;
     return { tallies, totalParticipants: participantCount };
+  }
+}
+
+/**
+ * Read public survey metadata straight from the ledger.
+ * PUBLIC: questionCount, surveyActive, participantCount are ledger fields.
+ * PRIVATE: nothing — this is the same data anyone can read from the chain.
+ *
+ * Used by /survey and /results when the off-chain survey metadata (title,
+ * question text, options) is not present in this browser's localStorage —
+ * e.g. a respondent or a member of the public opening a shared link.
+ */
+export async function getSurveyMetadata(
+  surveyId: string,
+): Promise<{
+  questionCount: number;
+  surveyActive: boolean;
+  participantCount: number;
+} | null> {
+  try {
+    await ensureMidnightRuntime();
+    const states = await getPublicStates(
+      readOnlyPublicDataProvider(),
+      hexToContractAddress(surveyId),
+    );
+    const state = await decodeLedger(states.contractState.data);
+    return {
+      questionCount: Number(state.questionCount),
+      surveyActive: state.surveyActive,
+      participantCount: Number(state.participantCount),
+    };
+  } catch {
+    // Not found on-chain (bad address / no deployment / indexer unreachable)
+    return null;
   }
 }
 

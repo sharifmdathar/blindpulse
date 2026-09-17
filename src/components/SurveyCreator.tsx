@@ -51,6 +51,8 @@ export default function SurveyCreator() {
   const addOption = (qi: number) => {
     setQuestions((prev) => {
       const next = [...prev];
+      // Circuit bound: MAX_OPTIONS = 20 pre-created tally cells per question.
+      if (next[qi].options.length >= 20) return next;
       next[qi] = { ...next[qi], options: [...next[qi].options, ""] };
       return next;
     });
@@ -179,9 +181,10 @@ export default function SurveyCreator() {
               </div>
               <button
                 onClick={() => addOption(qi)}
-                className="mt-1 text-xs text-gray-500 hover:text-gray-700"
+                disabled={q.options.length >= 20}
+                className="mt-1 text-xs text-gray-500 hover:text-gray-700 disabled:text-gray-300"
               >
-                + Add option
+                + Add option{q.options.length >= 20 ? " (max 20)" : ""}
               </button>
             </div>
           ))}

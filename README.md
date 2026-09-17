@@ -55,8 +55,13 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 
 ## Contract Address (Preprod)
 
-- **Contract address:** `c85d9e980809d76f7f0204be2730c752b0abfb5ae572c1fa038622c7a0ba7d4f`
-- **Deploy tx:** [`fb4b3947e02fce9be2b959ad5daedf3f81886ed3e0920a229fee2de7c4c233b4`](https://explorer.1am.xyz/tx/fb4b3947e02fce9be2b959ad5daedf3f81886ed3e0920a229fee2de7c4c233b4?network=preprod) (block 2,590,444)
+- **Contract address:** `92ef920564c1b67d8081f6eea8a880c7ac0904d601396ef87c16859b29ff8087`
+  (live survey — verify with `CONTRACT_ADDRESS=92ef… bun scripts/verify-deploy.ts`)
+- Earlier deployment (superseded): `c85d9e980809d76f7f0204be2730c752b0abfb5ae572c1fa038622c7a0ba7d4f`,
+  deploy tx [`fb4b3947…33b4`](https://explorer.1am.xyz/tx/fb4b3947e02fce9be2b959ad5daedf3f81886ed3e0920a229fee2de7c4c233b4?network=preprod)
+  (block 2,590,444) — retired because its circuit had a first-vote bug:
+  tally cells were not pre-created, so any initial vote on an option
+  failed with "expected a cell, received null".
 - Deployed via the DApp (`/create`) through Lace + Midnight.js, per the
   project constraint that deployment always goes through the SDK — never
   raw RPC.

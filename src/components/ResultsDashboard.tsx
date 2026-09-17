@@ -56,39 +56,57 @@ export default function ResultsDashboard({
       </div>
 
       <div className="space-y-8">
-        {questions.map((q) => (
-          <div key={q.index} className="rounded-lg border p-4">
-            <p className="mb-4 font-medium">{q.text}</p>
-            <div className="space-y-3">
-              {q.options.map((opt, oi) => {
-                const count = results.tallies[q.index]?.[oi] ?? 0;
-                const pct =
-                  results.totalParticipants > 0
-                    ? Math.round((count / results.totalParticipants) * 100)
-                    : 0;
-                return (
-                  <div key={oi}>
-                    <div className="mb-1 flex justify-between text-sm">
-                      <span>{opt}</span>
-                      <span className="text-gray-500">
-                        {count} ({pct}%)
-                      </span>
+        {questions.map((q) => {
+          const tallyRow = results.tallies[q.index] ?? {};
+          // With off-chain metadata: label every declared option.
+          // Without it (public on-chain fallback): derive one row per option
+          // index that has received at least one vote.
+          const rows =
+            q.options.length > 0
+              ? q.options.map((opt, oi) => ({ label: opt, oi }))
+              : Object.keys(tallyRow)
+                  .map(Number)
+                  .sort((a, b) => a - b)
+                  .map((oi) => ({ label: `Option ${oi + 1}`, oi }));
+          return (
+            <div key={q.index} className="rounded-lg border p-4">
+              <p className="mb-4 font-medium">{q.text}</p>
+              <div className="space-y-3">
+                {rows.map(({ label, oi }) => {
+                  const count = tallyRow[oi] ?? 0;
+                  const pct =
+                    results.totalParticipants > 0
+                      ? Math.round((count / results.totalParticipants) * 100)
+                      : 0;
+                  return (
+                    <div key={oi}>
+                      <div className="mb-1 flex justify-between text-sm">
+                        <span>{label}</span>
+                        <span className="text-gray-500">
+                          {count} ({pct}%)
+                        </span>
+                      </div>
+                      {/* Pure CSS bar — no charting library needed */}
+                      <div className="h-6 w-full rounded bg-gray-200">
+                        <div
+                          className="h-6 rounded bg-black transition-all"
+                          style={{
+                            width: `${(count / maxVotes) * 100}%`,
+                          }}
+                        />
+                      </div>
                     </div>
-                    {/* Pure CSS bar — no charting library needed */}
-                    <div className="h-6 w-full rounded bg-gray-200">
-                      <div
-                        className="h-6 rounded bg-black transition-all"
-                        style={{
-                          width: `${(count / maxVotes) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+                {rows.length === 0 && (
+                  <p className="text-sm text-gray-400">
+                    No votes recorded yet.
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <p className="mt-8 text-center text-xs text-gray-400">
