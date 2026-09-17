@@ -20,6 +20,12 @@ export default function SurveyForm({
   const [selections, setSelections] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
 
+  // A "Nullifier already spent" rejection means THIS wallet already voted in
+  // THIS survey (the nullifier is deterministic per wallet per survey). That
+  // is the anti-double-submit guarantee working — explain it as a friendly
+  // notice, not a raw circuit error.
+  const doubleVoted = /nullifier already spent/i.test(error ?? "");
+
   const handleSelect = (qIndex: number, optionIndex: number) => {
     setSelections((prev) => ({ ...prev, [qIndex]: optionIndex }));
   };
@@ -105,7 +111,30 @@ export default function SurveyForm({
         {loading ? "Submitting..." : "Submit Anonymous Response"}
       </button>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div
+          className={`rounded-md border px-3 py-2 text-sm ${
+            doubleVoted
+              ? "border-amber-300 bg-amber-50 text-amber-800"
+              : "border-red-200 bg-red-50 text-red-600"
+          }`}
+        >
+          {doubleVoted ? (
+            <>
+              <p className="font-medium">
+                This wallet has already responded to this survey.
+              </p>
+              <p className="mt-1">
+                One anonymous response per wallet — your earlier submission is
+                already counted in the aggregate. To respond again as a
+                different participant, connect a different Lace account.
+              </p>
+            </>
+          ) : (
+            <p>{error}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
