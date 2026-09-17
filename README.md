@@ -8,6 +8,22 @@ Organizations create surveys. Respondents prove eligibility
 (token holder / member / attendee) via ZK proof WITHOUT revealing
 identity. Only aggregate tallies hit the public ledger.
 
+## DApp Pages
+
+| Route          | Who                    | What                                                                    |
+| -------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `/`            | anyone                 | Landing + privacy explainer                                             |
+| `/create`      | organizer (wallet)     | Deploy a survey contract through Lace + Midnight.js                     |
+| `/survey/[id]` | respondent (wallet)    | Submit an anonymous, ZK-proofed response                                |
+| `/results/[id]`| anyone                 | Public aggregate results for one survey (deep-linkable, no wallet)      |
+| `/dashboard`   | organizer / public     | All known surveys with live on-chain status, restore registry, add by address |
+
+Survey metadata (title, questions, options) is off-chain by design — the
+chain only stores aggregate tallies per contract address. Each deploying
+browser keeps its own list; `public/survey-registry.json` ships the known
+deployments so any browser can restore them via **Dashboard → Restore
+registry**, or a survey can be added by pasting its contract address.
+
 ## Privacy Model
 
 - **PRIVATE**: respondent identity, individual responses, credential data
@@ -93,14 +109,18 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 - Until a contract is deployed on Preprod, the app runs on a local fallback:
   surveys/responses persist in `localStorage` and results tally locally, so
   the full UX works end-to-end without a wallet.
+- Double-voting is impossible by construction: the nullifier is
+  deterministic per (wallet, survey), so a second submission from the same
+  wallet is rejected by the contract's nullifier set and the survey form
+  explains this with a friendly notice instead of a raw error.
 
 ## Levels
 
 | Level | Status | Requirements                                                             |
 | ----- | ------ | ------------------------------------------------------------------------ |
-| 1     | 🚧     | Toolchain, contract compile, deploy to Preprod, 5+ commits, README       |
-| 2     | ⏳     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
-| 3     | ⏳     | 3+ tests passing, CI/CD, 10+ commits, privacy model section              |
-| 4     | ⏳     | MVP live on Preprod, docs, CI/CD, product profile                        |
+| 1     | ✅     | Toolchain, contract compile, deploy to Preprod, 5+ commits, README       |
+| 2     | ✅     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
+| 3     | ✅     | 3+ tests passing (19), CI/CD, 10+ commits, privacy model section         |
+| 4     | 🚧     | MVP live on Preprod ✅, docs ✅, CI/CD ✅, public product profile pending |
 | 5     | ⏳     | 50 Preprod users, feedback loop, mentor approval                         |
 | 6     | ⏳     | Mainnet deploy, 20 real users, brand assets                              |
