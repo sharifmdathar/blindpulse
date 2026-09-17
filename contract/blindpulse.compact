@@ -16,7 +16,7 @@
 // disclose() is the ONLY way to write data to public ledger state.
 // We disclose ONLY aggregate data — never individual responses.
 
-pragma language_version 0.23;
+pragma language_version 0.18;
 
 import CompactStandardLibrary;
 

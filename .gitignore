@@ -2,6 +2,7 @@ node_modules/
 .next/
 out/
 managed/
+public/midnight-runtime/
 .env.local
 .env.production
 *.tsbuildinfo

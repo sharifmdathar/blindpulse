@@ -4,8 +4,8 @@ import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-p
 import { FetchZkConfigProvider } from "@midnight-ntwrk/midnight-js-fetch-zk-config-provider";
 import { dappConnectorProvingProvider } from "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider";
 import { createProofProvider } from "@midnight-ntwrk/midnight-js-types";
-import { CompiledContract } from "@midnight-ntwrk/compact-js";
-import { Contract as BlindPulseContract } from "../../managed/contract/index.js";
+import { CompiledContract } from "@midnight-ntwrk/midnight-js-protocol/compact-js";
+import type { Contract } from "@midnight-ntwrk/midnight-js-protocol/compact-js";
 import {
   Transaction,
   encodeContractAddress,
@@ -22,23 +22,77 @@ import type { ContractAddress } from "@midnight-ntwrk/midnight-js-protocol/compa
 import { initOnchainRuntime } from "./wasm/onchain-runtime-v3";
 import { initLedgerRuntime } from "./wasm/ledger-v8";
 
+type ManagedModule = typeof import("../../managed/contract/index.cjs");
+type BlindPulseWitnesses<T> =
+  import("../../managed/contract/index.cjs").Witnesses<T>;
+
+let _managed: ManagedModule | null = null;
+let _compiledBlindPulse: CompiledContract.CompiledContract<
+  Contract<undefined>,
+  undefined,
+  never
+> | null = null;
+
+async function getManaged(): Promise<ManagedModule> {
+  if (typeof window === "undefined") {
+    throw new Error("BlindPulse contract runtime is browser-only");
+  }
+  if (!_managed) _managed = await import("../../managed/contract/index.cjs");
+  return _managed;
+}
+
+export async function getCompiledBlindPulse(): Promise<
+  CompiledContract.CompiledContract<Contract<undefined>, undefined, never>
+> {
+  if (_compiledBlindPulse) return _compiledBlindPulse;
+
+  const { Contract: BlindPulseContract } = await getManaged();
+
+  const BlindPulseCtor = BlindPulseContract as unknown as new (
+    witnesses: BlindPulseWitnesses<undefined>,
+  ) => Contract<undefined>;
+
+  _compiledBlindPulse = CompiledContract.withCompiledFileAssets(
+    CompiledContract.withVacantWitnesses(
+      CompiledContract.make("BlindPulse", BlindPulseCtor),
+    ),
+    "managed/contract",
+  ) as unknown as CompiledContract.CompiledContract<
+    Contract<undefined>,
+    undefined,
+    never
+  >;
+
+  return _compiledBlindPulse;
+}
+
+
+
 /** Circuit IDs matching managed/keys and managed/zkir filenames */
 export type BlindPulseCircuits = "submitResponse" | "closeSurvey";
 
 const NETWORK_ID = "preprod";
 
 /**
+ * The managed constructor, viewed at the deploy-compatible contract type.
+ * The Compact compiler emits a generic `Contract<T, W>` class from which
+ * TypeScript cannot infer matching type arguments (they collapse to `never`,
+ * which deployContract rejects). At runtime the constructor simply takes a
+ * witnesses object, so we annotate the intended type once here instead of
+ * casting at every call site.
+ */
+
+/**
  * Compiled contract — used for deploy, call, and state decoding.
  * withVacantWitnesses: contract declares no witnesses, so none are required.
  * withCompiledFileAssets: erases the CompiledAssetsPath context so the
  * compiled contract is deploy-ready (deployContract requires R = never).
+ *
+ * NOTE: the final assertion only reconciles type parameters (`never` vs
+ * `undefined` private state). At runtime deployContract reads
+ * tag/circuits/initialState structurally, which the compiled contract
+ * provides regardless of these parameters.
  */
-export const compiledBlindPulse = CompiledContract.withCompiledFileAssets(
-  CompiledContract.withVacantWitnesses(
-    CompiledContract.make("BlindPulse", BlindPulseContract),
-  ),
-  "managed/contract",
-);
 
 /**
  * Minimal in-memory private state provider.

@@ -1,16 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useWallet } from "@/hooks/useWallet";
+import SurveyCreator from "@/components/SurveyCreator";
 
-// Client-only: prevents the Midnight/WASM contract from being
-// evaluated during SSR.
-const SurveyCreator = dynamic(
-  () => import("@/components/SurveyCreator"),
-  { ssr: false, loading: () => <p>Loading…</p> }
-);
-
-export default function CreateSurveyPage() {
+export default function CreateSurveyClient() {
   const { isConnected, connect, status } = useWallet();
 
   if (status === "connecting") {

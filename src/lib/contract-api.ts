@@ -10,14 +10,41 @@ import { getSurvey } from "./survey-store";
 import { getConnectedApi } from "./wallet";
 import {
   createContractProviders,
-  compiledBlindPulse,
+  getCompiledBlindPulse,
   contractAddressToHex,
   ensureMidnightRuntime,
   hexToContractAddress,
 } from "./midnight";
 import { deployContract, findDeployedContract, getPublicStates } from "@midnight-ntwrk/midnight-js-contracts";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
-import { ledger } from "../../managed/contract/index.js";
+import type { StateValue } from "@midnight-ntwrk/compact-runtime";
+
+type LedgerFn = typeof import("../../managed/contract/index.cjs").ledger;
+let _ledger: LedgerFn | null = null;
+
+async function getLedger(): Promise<LedgerFn> {
+  if (typeof window === "undefined") {
+    throw new Error("BlindPulse contract runtime is browser-only");
+  }
+  if (!_ledger) {
+    ({ ledger: _ledger } = await import("../../managed/contract/index.cjs"));
+  }
+  return _ledger;
+}
+
+/**
+ * Decode public ledger state from indexer data.
+ * PUBLIC: only aggregate tallies, participant count, survey metadata.
+ *
+ * NOTE: the generated ledger() types its parameter as StateValue, but at
+ * runtime it builds QueryContext(ChargedState) — exactly what
+ * getPublicStates returns — so this cast bridges the stale generated types.
+ * Newer compiler output types the parameter as `StateValue | ChargedState`.
+ */
+async function decodeLedger(data: unknown) {
+  const ledger = await getLedger();
+  return ledger(data as unknown as StateValue);
+}
 
 /** MAX_Q — must match contract constant */
 const MAX_Q = 20;
@@ -83,10 +110,12 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
 
   try {
     const providers = await createContractProviders(api);
+    const compiledContract = await getCompiledBlindPulse();
     const deployed = await deployContract(providers, {
-      compiledContract: compiledBlindPulse,
+      compiledContract,
       args: [new Uint8Array(32), BigInt(questionCount)],
     });
+
     const contractAddress = deployed.deployTxData.public.contractAddress;
     return {
       id: contractAddressToHex(contractAddress),
@@ -122,8 +151,9 @@ export async function submitResponse(
 
   try {
     const providers = await createContractProviders(api);
+    const compiledContract = await getCompiledBlindPulse();
     const found = await findDeployedContract(providers, {
-      compiledContract: compiledBlindPulse,
+      compiledContract,
       contractAddress: hexToContractAddress(surveyId),
     });
     const padded = Array.from({ length: MAX_Q }, (_, i) =>
@@ -151,7 +181,7 @@ export async function getResults(surveyId: string): Promise<SurveyResults> {
       readOnlyPublicDataProvider(),
       hexToContractAddress(surveyId),
     );
-    const state = ledger(states.contractState.data);
+    const state = await decodeLedger(states.contractState.data);
     const tallies: Record<number, Record<number, number>> = {};
     const qCount = Number(state.questionCount);
     for (let qi = 0; qi < qCount; qi++) {
@@ -183,7 +213,7 @@ export async function getParticipantCount(surveyId: string): Promise<number> {
       readOnlyPublicDataProvider(),
       hexToContractAddress(surveyId),
     );
-    const state = ledger(states.contractState.data);
+    const state = await decodeLedger(states.contractState.data);
     return Number(state.participantCount);
   } catch {
     return (getResponses()[surveyId] ?? []).length;

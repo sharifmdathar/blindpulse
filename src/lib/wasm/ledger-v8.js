@@ -68,8 +68,8 @@ function buildImports() {
 
 async function instantiateLedgerRuntime() {
   const bytes = await loadWasmBytes(WASM_URL, NODE_REL_PATH);
-  const wasmModule = new WebAssembly.Module(bytes);
-  const wasmInstance = new WebAssembly.Instance(wasmModule, buildImports());
+  const wasmModule = await WebAssembly.compile(bytes);
+  const wasmInstance = await WebAssembly.instantiate(wasmModule, buildImports());
   const wasm = wasmInstance.exports;
   __wbg_set_wasm(wasm);
   wasm.__wbindgen_start();

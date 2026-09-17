@@ -7,7 +7,7 @@ import { getSurvey } from "@/lib/survey-store";
 import ResultsDashboard from "@/components/ResultsDashboard";
 import type { StoredSurvey } from "@/lib/survey-store";
 
-export default function ResultsPage() {
+export default function ResultsPageClient() {
   const params = useParams();
   const surveyId = params.id as string;
   const [survey, setSurvey] = useState<StoredSurvey | null>(null);
@@ -27,7 +27,7 @@ export default function ResultsPage() {
       <div className="py-12 text-center">
         <h1 className="mb-2 text-2xl font-semibold">Survey not found</h1>
         <p className="mb-4 text-gray-600">
-          No survey with ID {surveyId} found.
+          No survey with ID &quot;{surveyId}&quot; found.
         </p>
         <Link
           href="/"

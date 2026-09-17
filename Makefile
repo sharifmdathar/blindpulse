@@ -1,22 +1,19 @@
-.PHONY: dev build compile test test-contract deploy lint
+.PHONY: dev build compile test deploy lint
 
 dev:
-	npm run dev
+	bun run dev
 
 build:
-	npm run build
+	bun run build
 
 compile:
-	npm run compile
+	bun run compile
 
 test:
-	npm test
-
-test-contract:
-	npm run test:contract
+	bun run test
 
 deploy:
-	npm run deploy
+	bun run deploy
 
 lint:
-	npm run lint
+	bun run lint

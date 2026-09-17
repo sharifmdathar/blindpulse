@@ -8,7 +8,7 @@ import SurveyForm from "@/components/SurveyForm";
 import type { StoredSurvey } from "@/lib/survey-store";
 import Link from "next/link";
 
-export default function SurveyPage() {
+export default function SurveyPageClient() {
   const params = useParams();
   const surveyId = params.id as string;
   const { isConnected, connect, status } = useWallet();
@@ -22,7 +22,9 @@ export default function SurveyPage() {
   }, [surveyId]);
 
   if (!loaded) {
-    return <div className="py-12 text-center text-gray-500">Loading...</div>;
+    return (
+      <div className="py-12 text-center text-gray-500">Loading...</div>
+    );
   }
 
   if (!survey) {
@@ -30,7 +32,7 @@ export default function SurveyPage() {
       <div className="py-12 text-center">
         <h1 className="mb-2 text-2xl font-semibold">Survey not found</h1>
         <p className="mb-4 text-gray-600">
-          No survey with ID {surveyId} found. Create one first.
+          No survey with ID &quot;{surveyId}&quot; found. Create one first.
         </p>
         <Link
           href="/create"
@@ -71,7 +73,7 @@ export default function SurveyPage() {
     <div>
       <h1 className="mb-2 text-xl font-semibold">{survey.title}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        {survey.questions.length} question{" "}{survey.questions.length !== 1 ? "(s)" : ""}
+        {survey.questions.length} question{survey.questions.length !== 1 ? "s" : ""}
       </p>
       <SurveyForm
         surveyId={surveyId}
