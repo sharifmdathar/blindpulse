@@ -52,21 +52,22 @@ export default function ResultsPage() {
   }, [surveyId]);
 
   if (!loaded || !metaLoaded) {
-    return <div className="py-12 text-center text-gray-500">Loading...</div>;
+    return (
+      <div className="py-12 text-center text-moon-300/60">Loading…</div>
+    );
   }
 
   if (!survey) {
     if (!meta) {
       return (
         <div className="py-12 text-center">
-          <h1 className="mb-2 text-2xl font-semibold">Survey not found</h1>
-          <p className="mb-4 text-gray-600">
+          <h1 className="mb-2 text-2xl font-semibold text-moon-50">
+            Survey not found
+          </h1>
+          <p className="mb-6 text-moon-300">
             No survey with ID {surveyId} found.
           </p>
-          <Link
-            href="/dashboard"
-            className="rounded-md bg-black px-4 py-2 text-sm text-white"
-          >
+          <Link href="/dashboard" className="btn-primary">
             Go to Dashboard
           </Link>
         </div>
@@ -84,7 +85,7 @@ export default function ResultsPage() {
     );
     return (
       <div>
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="mb-6 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] p-3 text-sm text-amber-200">
           Question text and option labels live off-chain with the survey
           organizer, so aggregate results are shown with generic labels.
         </div>
@@ -95,7 +96,9 @@ export default function ResultsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">{survey.title}</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-moon-50">
+        {survey.title}
+      </h1>
       <ResultsDashboard surveyId={surveyId} questions={survey.questions} />
     </div>
   );

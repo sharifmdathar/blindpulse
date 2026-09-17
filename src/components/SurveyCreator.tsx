@@ -23,24 +23,6 @@ export default function SurveyCreator() {
   const [googleFormUrl, setGoogleFormUrl] = useState("");
   const [savedSurvey, setSavedSurvey] = useState<StoredSurvey | null>(null);
 
-  /**
-   * Copy the respondent-facing share link (/survey/<id>) to the clipboard.
-   * PUBLIC: the link contains only the public contract address.
-   */
-  const copyShareLink = async () => {
-    if (!deployedId) return;
-    const link = `${window.location.origin}/survey/${deployedId}`;
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard unavailable (permissions / insecure context) — prompt lets
-      // the organizer copy manually instead of failing silently.
-      window.prompt("Copy the survey link:", link);
-    }
-  };
-
   const handleCountChange = (n: number) => {
     const clamped = Math.max(1, Math.min(20, n));
     setQuestionCount(clamped);
@@ -89,6 +71,24 @@ export default function SurveyCreator() {
     });
   };
 
+  /**
+   * Copy the respondent-facing share link (/survey/<id>) to the clipboard.
+   * PUBLIC: the link contains only the public contract address.
+   */
+  const copyShareLink = async () => {
+    if (!deployedId) return;
+    const link = `${window.location.origin}/survey/${deployedId}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable (permissions / insecure context) — prompt lets
+      // the organizer copy manually instead of failing silently.
+      window.prompt("Copy the survey link:", link);
+    }
+  };
+
   const handleCreate = async () => {
     if (!title.trim()) return;
     const blank = questions.some(
@@ -131,15 +131,16 @@ export default function SurveyCreator() {
         : {}),
     };
     return (
-      <div className="mx-auto max-w-lg rounded-lg border border-green-200 bg-green-50 p-6">
-        <p className="mb-2 text-lg font-semibold text-green-800">
+      <div className="card mx-auto max-w-lg border-emerald-400/30 p-6">
+        <p className="mb-2 text-lg font-semibold text-moon-50">
           Survey deployed!
         </p>
-        <p className="mb-4 text-sm text-green-700">
+        <p className="mb-4 text-sm text-moon-300">
           Contract ID:{" "}
-          <span className="font-mono text-xs">{deployedId}</span>
+          <span className="font-mono text-xs text-moon-100">{deployedId}</span>
         </p>
-        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+
+        <div className="mb-4 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] p-3 text-xs text-amber-200">
           <p className="font-medium">One manual step to stay shareable:</p>
           <p className="mt-1">
             Click below and append the copied JSON to the{" "}
@@ -151,42 +152,32 @@ export default function SurveyCreator() {
         <div className="mb-4 flex gap-2">
           <button
             onClick={async () => {
+              const entryJson = JSON.stringify(registryEntry, null, 2);
               try {
-                await navigator.clipboard.writeText(
-                  JSON.stringify(registryEntry, null, 2),
-                );
+                await navigator.clipboard.writeText(entryJson);
                 setCopiedRegistry(true);
                 setTimeout(() => setCopiedRegistry(false), 2000);
               } catch {
-                window.prompt("Copy this registry entry:", JSON.stringify(registryEntry, null, 2));
+                window.prompt("Copy this registry entry:", entryJson);
               }
             }}
-            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+            className="btn-mini"
           >
             {copiedRegistry ? "Copied ✓" : "Copy registry entry"}
           </button>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link
-            href={`/survey/${deployedId}`}
-            className="rounded-md bg-black px-4 py-2 text-sm text-white hover:bg-gray-800"
-          >
+          <Link href={`/survey/${deployedId}`} className="btn-primary">
             Take Survey
           </Link>
-          <Link
-            href={`/results/${deployedId}`}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-          >
+          <Link href={`/results/${deployedId}`} className="btn-ghost">
             View Results
           </Link>
-          <button
-            onClick={copyShareLink}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-          >
+          <button onClick={copyShareLink} className="btn-ghost">
             {copied ? "Copied ✓" : "Copy link"}
           </button>
         </div>
-        <p className="mt-3 text-xs text-gray-500">
+        <p className="mt-3 text-xs text-moon-300/70">
           Shared links are self-contained — anyone opening them gets the
           question text restored from the public registry automatically.
         </p>
@@ -196,8 +187,8 @@ export default function SurveyCreator() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
-      <div className="rounded-lg border p-6">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+      <div className="card p-6">
+        <label className="mb-1 block text-sm font-medium text-moon-200">
           Survey title
         </label>
         <input
@@ -205,10 +196,10 @@ export default function SurveyCreator() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Q4 Employee Feedback"
-          className="mb-4 w-full rounded-md border px-3 py-2 text-sm"
+          className="input-dark mb-4"
         />
 
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <label className="mb-1 block text-sm font-medium text-moon-200">
           Number of questions (max 20)
         </label>
         <input
@@ -217,13 +208,13 @@ export default function SurveyCreator() {
           max={20}
           value={questionCount}
           onChange={(e) => handleCountChange(Number(e.target.value))}
-          className="mb-4 w-full rounded-md border px-3 py-2"
+          className="input-dark mb-4"
         />
 
         <div className="space-y-4">
           {questions.map((q, qi) => (
-            <div key={qi} className="rounded-md border p-3">
-              <label className="mb-1 block text-xs font-medium text-gray-500">
+            <div key={qi} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+              <label className="mb-1 block text-xs font-medium text-moon-300">
                 Question {qi + 1}
               </label>
               <input
@@ -231,7 +222,7 @@ export default function SurveyCreator() {
                 value={q.text}
                 onChange={(e) => updateQuestion(qi, e.target.value)}
                 placeholder="Write your question..."
-                className="mb-2 w-full rounded-md border px-3 py-1.5 text-sm"
+                className="input-dark mb-2"
               />
               <div className="space-y-1">
                 {q.options.map((opt, oi) => (
@@ -241,12 +232,12 @@ export default function SurveyCreator() {
                       value={opt}
                       onChange={(e) => updateOption(qi, oi, e.target.value)}
                       placeholder={`Option ${oi + 1}`}
-                      className="w-full rounded-md border px-2 py-1 text-sm"
+                      className="input-dark"
                     />
                     {q.options.length > 2 && (
                       <button
                         onClick={() => removeOption(qi, oi)}
-                        className="px-2 text-sm text-red-500 hover:text-red-700"
+                        className="px-2 text-sm text-rose-300 hover:text-rose-200"
                       >
                         x
                       </button>
@@ -257,7 +248,7 @@ export default function SurveyCreator() {
               <button
                 onClick={() => addOption(qi)}
                 disabled={q.options.length >= 20}
-                className="mt-1 text-xs text-gray-500 hover:text-gray-700 disabled:text-gray-300"
+                className="mt-1 text-xs text-moon-300 hover:text-moon-100 disabled:text-moon-300/30"
               >
                 + Add option{q.options.length >= 20 ? " (max 20)" : ""}
               </button>
@@ -265,7 +256,7 @@ export default function SurveyCreator() {
           ))}
         </div>
 
-        <label className="mt-4 mb-1 block text-sm font-medium text-gray-700">
+        <label className="mt-4 mb-1 block text-sm font-medium text-moon-200">
           Google Form fallback URL (optional)
         </label>
         <input
@@ -273,9 +264,9 @@ export default function SurveyCreator() {
           value={googleFormUrl}
           onChange={(e) => setGoogleFormUrl(e.target.value)}
           placeholder="https://docs.google.com/forms/d/e/.../viewform"
-          className="w-full rounded-md border px-3 py-2 text-sm"
+          className="input-dark"
         />
-        <p className="mt-1 mb-4 text-xs text-gray-500">
+        <p className="mt-1 mb-4 text-xs text-moon-300/70">
           Shown as a wallet-free fallback on the survey page. Responses go to
           the organizer off-chain — not part of the on-chain anonymous tally.
         </p>
@@ -283,12 +274,12 @@ export default function SurveyCreator() {
         <button
           onClick={handleCreate}
           disabled={loading || !title.trim()}
-          className="mt-2 w-full rounded-md bg-black px-6 py-2 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
+          className="btn-primary mt-2 w-full"
         >
-          {loading ? "Deploying..." : "Deploy Survey Contract"}
+          {loading ? "Deploying…" : "Deploy Survey Contract"}
         </button>
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
       </div>
     </div>
   );

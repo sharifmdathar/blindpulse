@@ -57,21 +57,22 @@ export default function SurveyPage() {
   }, [surveyId]);
 
   if (!loaded || !metaLoaded) {
-    return <div className="py-12 text-center text-gray-500">Loading...</div>;
+    return (
+      <div className="py-12 text-center text-moon-300/60">Loading…</div>
+    );
   }
 
   if (!survey) {
     if (!meta) {
       return (
         <div className="py-12 text-center">
-          <h1 className="mb-2 text-2xl font-semibold">Survey not found</h1>
-          <p className="mb-4 text-gray-600">
+          <h1 className="mb-2 text-2xl font-semibold text-moon-50">
+            Survey not found
+          </h1>
+          <p className="mb-6 text-moon-300">
             No survey with ID {surveyId} found. Create one first.
           </p>
-          <Link
-            href="/create"
-            className="rounded-md bg-black px-4 py-2 text-sm text-white"
-          >
+          <Link href="/create" className="btn-primary">
             Create Survey
           </Link>
         </div>
@@ -80,10 +81,15 @@ export default function SurveyPage() {
     if (!meta.surveyActive) {
       return (
         <div className="py-12 text-center">
-          <h1 className="mb-2 text-2xl font-semibold">Survey closed</h1>
-          <p className="mb-4 text-gray-600">
+          <h1 className="mb-2 text-2xl font-semibold text-moon-50">
+            Survey closed
+          </h1>
+          <p className="mb-6 text-moon-300">
             This survey is no longer accepting responses.
           </p>
+          <Link href={`/results/${surveyId}`} className="btn-ghost">
+            View Results
+          </Link>
         </div>
       );
     }
@@ -98,7 +104,7 @@ export default function SurveyPage() {
     );
     return (
       <div>
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="mb-6 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] p-3 text-sm text-amber-200">
           Question text and option labels live off-chain with the survey
           organizer, so questions are shown with generic labels.
         </div>
@@ -114,8 +120,10 @@ export default function SurveyPage() {
   if (survey.googleFormUrl) {
     return (
       <div>
-        <h1 className="mb-2 text-xl font-semibold">{survey.title}</h1>
-        <p className="mb-6 text-sm text-gray-500">
+        <h1 className="mb-2 text-xl font-semibold text-moon-50">
+          {survey.title}
+        </h1>
+        <p className="mb-6 text-sm text-moon-300/70">
           {survey.questions.length} question{" "}
           {survey.questions.length !== 1 ? "(s)" : ""}
         </p>
@@ -131,8 +139,8 @@ export default function SurveyPage() {
 
   if (status === "connecting") {
     return (
-      <div className="py-12 text-center text-gray-500">
-        Connecting wallet...
+      <div className="py-12 text-center text-moon-300/60">
+        Connecting wallet…
       </div>
     );
   }
@@ -140,18 +148,17 @@ export default function SurveyPage() {
   if (!isConnected) {
     return (
       <div className="py-12">
-        <h1 className="mb-2 text-2xl font-semibold text-center">{survey.title}</h1>
+        <h1 className="mb-2 text-center text-2xl font-semibold text-moon-50">
+          {survey.title}
+        </h1>
         <div className="mx-auto max-w-lg">
           <NewcomerHints />
-          <div className="rounded-lg border p-6 text-center">
-            <p className="mb-4 text-gray-600">
+          <div className="card p-6 text-center">
+            <p className="mb-4 text-moon-300">
               Connect your wallet to verify your eligibility and submit
               anonymously.
             </p>
-            <button
-              onClick={connect}
-              className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800"
-            >
+            <button onClick={connect} className="btn-primary px-6 py-3">
               Connect Wallet
             </button>
           </div>
@@ -162,8 +169,10 @@ export default function SurveyPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold">{survey.title}</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-2 text-xl font-semibold text-moon-50">
+        {survey.title}
+      </h1>
+      <p className="mb-6 text-sm text-moon-300/70">
         {survey.questions.length} question{" "}
         {survey.questions.length !== 1 ? "(s)" : ""}
       </p>

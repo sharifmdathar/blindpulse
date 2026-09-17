@@ -58,16 +58,16 @@ export default function FeedbackLoopPanel() {
 
   if (state.status === "loading") {
     return (
-      <div className="mb-6 animate-pulse rounded-lg border border-gray-100 bg-gray-50 p-4">
-        <div className="h-4 w-40 rounded bg-gray-200" />
-        <div className="mt-2 h-2 w-full rounded bg-gray-200" />
+      <div className="card mb-6 animate-pulse p-4">
+        <div className="h-4 w-40 rounded bg-white/10" />
+        <div className="mt-2 h-2 w-full rounded bg-white/10" />
       </div>
     );
   }
 
   if (state.status === "none") {
     return (
-      <div className="mb-6 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+      <div className="card mb-6 p-4 text-sm text-moon-300">
         Feedback loop idle — no active survey in the registry. Deploy one to
         start collecting.
       </div>
@@ -78,35 +78,35 @@ export default function FeedbackLoopPanel() {
   const pct = Math.min(100, Math.round((participants / LEVEL5_GOAL) * 100));
 
   return (
-    <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+    <div className="card mb-6 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-800">
+          <p className="text-sm font-medium text-moon-50">
             Feedback loop · {entry.title ?? "Active survey"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="mt-0.5 text-xs text-moon-300">
             {participants} of {LEVEL5_GOAL} respondents toward the Level 5
             goal ·{" "}
             <Link
               href={`/survey/${entry.id}`}
-              className="underline hover:text-gray-700"
+              className="underline hover:text-moon-50"
             >
               take the survey
             </Link>{" "}
             ·{" "}
             <Link
               href={`/results/${entry.id}`}
-              className="underline hover:text-gray-700"
+              className="underline hover:text-moon-50"
             >
               live results
             </Link>
           </p>
         </div>
-        <p className="text-2xl font-bold text-gray-900">{participants}</p>
+        <p className="text-2xl font-bold text-moon-50">{participants}</p>
       </div>
-      <div className="mt-3 h-2 w-full rounded-full bg-gray-200">
+      <div className="mt-3 h-2 w-full rounded-full bg-white/10">
         <div
-          className="h-2 rounded-full bg-black transition-all"
+          className="h-2 rounded-full bg-gradient-to-r from-glow to-moon-300 shadow-glow-sm transition-all"
           style={{ width: `${pct}%` }}
         />
       </div>

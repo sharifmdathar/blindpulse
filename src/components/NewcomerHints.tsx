@@ -16,8 +16,8 @@ export default function NewcomerHints() {
   if (isConnected) return null;
 
   return (
-    <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-      <p className="font-medium text-gray-800">New here? Two-minute setup:</p>
+    <div className="card mb-6 p-4 text-sm text-moon-300">
+      <p className="font-medium text-moon-50">New here? Two-minute setup:</p>
       <ol className="mt-1 list-decimal space-y-0.5 pl-5">
         <li>
           Install the <span className="font-medium">1AM</span> or{" "}
@@ -31,7 +31,7 @@ export default function NewcomerHints() {
             href="https://faucet.preprod.midnight.network/"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-gray-800"
+            className="underline hover:text-moon-100"
           >
             Midnight Preprod faucet
           </a>{" "}
@@ -39,7 +39,7 @@ export default function NewcomerHints() {
         </li>
         <li>Click Connect Wallet above and approve in the wallet.</li>
       </ol>
-      <p className="mt-2 text-xs text-gray-400">
+      <p className="mt-2 text-xs text-moon-300/60">
         No wallet and just want to answer? If this survey offers a Google
         Form fallback, it appears on this page.
       </p>

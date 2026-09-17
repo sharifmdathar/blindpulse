@@ -26,6 +26,8 @@ export default function SurveyForm({
   // notice, not a raw circuit error.
   const doubleVoted = /nullifier already spent/i.test(error ?? "");
 
+  const answered = Object.keys(selections).length;
+
   const handleSelect = (qIndex: number, optionIndex: number) => {
     setSelections((prev) => ({ ...prev, [qIndex]: optionIndex }));
   };
@@ -50,22 +52,36 @@ export default function SurveyForm({
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-lg rounded-lg border border-green-200 bg-green-50 p-8 text-center">
-        <div className="mb-3 text-3xl">✓</div>
-        <p className="text-lg font-medium text-green-800">
+      <div className="card mx-auto max-w-lg border-emerald-400/30 p-10 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-400/10 text-2xl shadow-glow-sm">
+          ✓
+        </div>
+        <p className="text-lg font-medium text-moon-50">
           Your response has been submitted anonymously.
         </p>
-        <p className="mt-2 text-sm text-green-600">
-          Your identity and individual answers remain private. Only aggregate
-          tallies are recorded on-chain.
+        <p className="mt-2 text-sm text-moon-300">
+          Your identity and individual answers remain in shadow. Only the
+          aggregate is recorded on-chain.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
-      <h2 className="text-xl font-semibold">Survey</h2>
+    <div className="mx-auto max-w-lg space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-moon-50">Survey</h2>
+        <span className="text-xs text-moon-300/70">
+          {answered} of {questionCount} answered
+        </span>
+      </div>
+      {/* progress bar */}
+      <div className="h-1 w-full rounded-full bg-white/10">
+        <div
+          className="h-1 rounded-full bg-gradient-to-r from-glow to-moon-300 transition-all"
+          style={{ width: `${questionCount ? (answered / questionCount) * 100 : 0}%` }}
+        />
+      </div>
 
       {questions.map((q) => {
         // With off-chain metadata: organizer-written option labels.
@@ -76,28 +92,31 @@ export default function SurveyForm({
             ? q.options
             : Array.from({ length: 5 }, (_, oi) => `Option ${oi + 1}`);
         return (
-          <div key={q.index} className="rounded-lg border p-4">
-            <p className="mb-3 font-medium">{q.text}</p>
+          <div key={q.index} className="card p-4">
+            <p className="mb-3 font-medium text-moon-50">{q.text}</p>
             <div className="space-y-2">
-              {options.map((opt, oi) => (
-                <label
-                  key={oi}
-                  className={`flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm ${
-                    selections[q.index] === oi
-                      ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`q-${q.index}`}
-                    checked={selections[q.index] === oi}
-                    onChange={() => handleSelect(q.index, oi)}
-                    className="mr-2"
-                  />
-                  {opt}
-                </label>
-              ))}
+              {options.map((opt, oi) => {
+                const selected = selections[q.index] === oi;
+                return (
+                  <label
+                    key={oi}
+                    className={`flex cursor-pointer items-center rounded-lg border px-3 py-2 text-sm transition-all ${
+                      selected
+                        ? "border-glow/70 bg-glow/10 text-moon-50 shadow-glow-sm"
+                        : "border-white/10 bg-white/[0.02] text-moon-300 hover:border-glow/30 hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`q-${q.index}`}
+                      checked={selected}
+                      onChange={() => handleSelect(q.index, oi)}
+                      className="mr-2 accent-[#8b7cff]"
+                    />
+                    {opt}
+                  </label>
+                );
+              })}
             </div>
           </div>
         );
@@ -106,17 +125,17 @@ export default function SurveyForm({
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
+        className="btn-primary w-full"
       >
-        {loading ? "Submitting..." : "Submit Anonymous Response"}
+        {loading ? "Proving & submitting…" : "Submit Anonymous Response"}
       </button>
 
       {error && (
         <div
-          className={`rounded-md border px-3 py-2 text-sm ${
+          className={`rounded-lg border px-3 py-2 text-sm ${
             doubleVoted
-              ? "border-amber-300 bg-amber-50 text-amber-800"
-              : "border-red-200 bg-red-50 text-red-600"
+              ? "border-amber-400/30 bg-amber-400/[0.07] text-amber-200"
+              : "border-rose-400/30 bg-rose-400/[0.07] text-rose-300"
           }`}
         >
           {doubleVoted ? (
@@ -124,10 +143,10 @@ export default function SurveyForm({
               <p className="font-medium">
                 This wallet has already responded to this survey.
               </p>
-              <p className="mt-1">
+              <p className="mt-1 text-amber-200/80">
                 One anonymous response per wallet — your earlier submission is
                 already counted in the aggregate. To respond again as a
-                different participant, connect a different Lace account.
+                different participant, connect a different wallet account.
               </p>
             </>
           ) : (

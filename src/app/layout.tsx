@@ -15,8 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <Layout>{children}</Layout>
+      <body className="min-h-screen">
+        <div className="starfield" aria-hidden="true" />
+        <div className="relative z-10">
+          <Layout>{children}</Layout>
+        </div>
       </body>
     </html>
   );

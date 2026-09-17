@@ -7,7 +7,7 @@ import { useWallet } from "@/hooks/useWallet";
 // evaluated during SSR.
 const SurveyCreator = dynamic(
   () => import("@/components/SurveyCreator"),
-  { ssr: false, loading: () => <p>Loading…</p> }
+  { ssr: false, loading: () => <p className="text-moon-300/60">Loading…</p> }
 );
 
 export default function CreateSurveyPage() {
@@ -15,8 +15,8 @@ export default function CreateSurveyPage() {
 
   if (status === "connecting") {
     return (
-      <div className="py-12 text-center text-gray-500">
-        Connecting wallet...
+      <div className="py-12 text-center text-moon-300/60">
+        Connecting wallet…
       </div>
     );
   }
@@ -24,14 +24,13 @@ export default function CreateSurveyPage() {
   if (!isConnected) {
     return (
       <div className="py-12 text-center">
-        <h1 className="mb-4 text-2xl font-semibold">Create a Survey</h1>
-        <p className="mb-6 text-gray-600">
+        <h1 className="mb-4 text-2xl font-semibold text-moon-50">
+          Create a Survey
+        </h1>
+        <p className="mb-8 text-moon-300">
           Connect your wallet to deploy a survey contract.
         </p>
-        <button
-          onClick={connect}
-          className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800"
-        >
+        <button onClick={connect} className="btn-primary px-6 py-3">
           Connect Wallet
         </button>
       </div>
@@ -40,7 +39,9 @@ export default function CreateSurveyPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">Create a Survey</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-moon-50">
+        Create a Survey
+      </h1>
       <SurveyCreator />
     </div>
   );

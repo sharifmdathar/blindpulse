@@ -121,36 +121,31 @@ function SurveyRow({
   }, [survey.id]);
 
   const badge = status.loading ? (
-    <span className="text-xs text-gray-400">checking chain…</span>
+    <span className="text-xs text-moon-300/50">checking chain…</span>
   ) : status.demo ? (
-    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
-      local demo · never deployed
-    </span>
+    <span className="pill pill-warn">local demo · never deployed</span>
   ) : status.live === false ? (
-    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-      not found on-chain
-    </span>
+    <span className="pill pill-closed">not found on-chain</span>
   ) : status.active && !closed ? (
-    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
+    <span className="pill pill-live">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
       ongoing
     </span>
   ) : (
-    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-      closed
-    </span>
+    <span className="pill pill-closed">closed</span>
   );
 
   return (
-    <div className="flex items-center justify-between rounded-lg border p-4">
+    <div className="card card-hover flex items-center justify-between p-4">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <p className="truncate font-medium">{survey.title}</p>
+          <p className="truncate font-medium text-moon-50">{survey.title}</p>
           {badge}
         </div>
-        <p className="mt-0.5 truncate font-mono text-xs text-gray-400">
+        <p className="mt-0.5 truncate font-mono text-xs text-moon-300/50">
           {survey.id}
         </p>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-moon-300">
           {status.loading
             ? "…"
             : status.live
@@ -164,20 +159,21 @@ function SurveyRow({
         </p>
       </div>
       <div className="ml-4 flex shrink-0 items-center gap-2">
-        <Link
-          href={`/results/${survey.id}`}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-        >
+        <Link href={`/results/${survey.id}`} className="btn-mini">
           Results
         </Link>
         {status.active && !closed && (
-          <Link
-            href={`/survey/${survey.id}`}
-            className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800"
-          >
+          <Link href={`/survey/${survey.id}`} className="btn-primary px-3 py-1.5">
             Take Survey
           </Link>
         )}
+        <button
+          onClick={copyShareLink}
+          title="Copy the respondent link to this survey"
+          className="btn-mini"
+        >
+          {copied ? "Copied ✓" : "Share"}
+        </button>
         {status.live && status.active && !closed && (
           <>
             {confirmingClose ? (
@@ -186,13 +182,13 @@ function SurveyRow({
                   onClick={handleClose}
                   disabled={closing}
                   title="Ends collection permanently — no further responses accepted"
-                  className="rounded-md bg-red-600 px-2 py-1.5 text-xs text-white hover:bg-red-700 disabled:bg-gray-400"
+                  className="btn-danger"
                 >
                   {closing ? "Closing…" : "Confirm close"}
                 </button>
                 <button
                   onClick={() => setConfirmingClose(false)}
-                  className="px-1 text-xs text-gray-500 hover:text-gray-700"
+                  className="px-1 text-xs text-moon-300 hover:text-moon-100"
                 >
                   keep
                 </button>
@@ -201,31 +197,21 @@ function SurveyRow({
               <button
                 onClick={() => setConfirmingClose(true)}
                 title="End collection permanently (on-chain)"
-                className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                className="btn-mini border-rose-400/30 text-rose-300 hover:border-rose-400/60"
               >
                 Close
               </button>
             )}
           </>
         )}
-        <button
-          onClick={copyShareLink}
-          title="Copy the respondent link to this survey"
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-        >
-          {copied ? "Copied ✓" : "Share"}
-        </button>
         {confirming ? (
           <span className="flex items-center gap-1">
-            <button
-              onClick={() => onRemove(survey.id)}
-              className="rounded-md bg-red-600 px-2 py-1.5 text-xs text-white hover:bg-red-700"
-            >
+            <button onClick={() => onRemove(survey.id)} className="btn-danger">
               Remove
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="px-1 text-xs text-gray-500 hover:text-gray-700"
+              className="px-1 text-xs text-moon-300 hover:text-moon-100"
             >
               keep
             </button>
@@ -234,14 +220,16 @@ function SurveyRow({
           <button
             onClick={() => setConfirming(true)}
             title="Remove from this list (does not touch the chain)"
-            className="px-1 text-lg leading-none text-gray-300 hover:text-red-500"
+            className="px-1 text-lg leading-none text-moon-300/40 transition-colors hover:text-rose-300"
           >
             ×
           </button>
         )}
       </div>
       {closeError && (
-        <p className="mt-2 w-full text-sm text-red-600">Close failed: {closeError}</p>
+        <p className="mt-2 w-full text-sm text-rose-300">
+          Close failed: {closeError}
+        </p>
       )}
     </div>
   );
@@ -267,6 +255,19 @@ export default function DashboardPage() {
     if (!surveys) return [];
     return Object.values(surveys).sort((a, b) => b.createdAt - a.createdAt);
   }, [surveys]);
+
+  /** Remove one row locally; the chain keeps its tallies either way. */
+  const removeRow = (id: string) => {
+    removeSurvey(id);
+    setSurveys(getSurveys());
+  };
+
+  /** Clear the whole list locally; on-chain state is untouched. */
+  const clearAll = () => {
+    clearSurveys();
+    setSurveys(getSurveys());
+    setConfirmClear(false);
+  };
 
   const addByAddress = async () => {
     const id = normalizeAddress(paste);
@@ -295,19 +296,6 @@ export default function DashboardPage() {
     setAdding(false);
   };
 
-  /** Remove one row locally; the chain keeps its tallies either way. */
-  const removeRow = (id: string) => {
-    removeSurvey(id);
-    setSurveys(getSurveys());
-  };
-
-  /** Clear the whole list locally; on-chain state is untouched. */
-  const clearAll = () => {
-    clearSurveys();
-    setSurveys(getSurveys());
-    setConfirmClear(false);
-  };
-
   /**
    * Merge the public registry (public/survey-registry.json) into this
    * browser's list. Never overwrites an existing local entry.
@@ -317,25 +305,14 @@ export default function DashboardPage() {
     setRestoring(true);
     setRestoreMsg(null);
     try {
-      const res = await fetch("/survey-registry.json");
-      if (!res.ok) throw new Error(`registry fetch failed (${res.status})`);
-      const data = await res.json();
-      const entries: Array<Partial<StoredSurvey>> = Array.isArray(
-        data.surveys,
-      )
-        ? data.surveys
-        : [];
+      const data = await fetchSurveyRegistry();
+      if (!data) throw new Error("registry unavailable");
+      const entries = data.surveys;
       const known = getSurveys();
       let added = 0;
       for (const s of entries) {
         if (!s?.id || known[s.id]) continue;
-        saveSurvey({
-          id: s.id,
-          title: s.title ?? `Survey ${s.id.slice(0, 10)}…`,
-          questionCount: s.questionCount ?? s.questions?.length ?? 0,
-          questions: Array.isArray(s.questions) ? s.questions : [],
-          createdAt: typeof s.createdAt === "number" ? s.createdAt : Date.now(),
-        });
+        applyRegistryEntry(data, s.id);
         added += 1;
       }
       setSurveys(getSurveys());
@@ -357,8 +334,8 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-moon-50">Dashboard</h1>
+          <p className="text-sm text-moon-300/70">
             Ongoing surveys and their live aggregate counts.
           </p>
         </div>
@@ -366,15 +343,12 @@ export default function DashboardPage() {
           {sorted.length > 0 &&
             (confirmClear ? (
               <span className="flex items-center gap-1">
-                <button
-                  onClick={clearAll}
-                  className="rounded-md bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-700"
-                >
+                <button onClick={clearAll} className="btn-danger">
                   Clear all
                 </button>
                 <button
                   onClick={() => setConfirmClear(false)}
-                  className="px-1 text-xs text-gray-500 hover:text-gray-700"
+                  className="px-1 text-xs text-moon-300 hover:text-moon-100"
                 >
                   keep
                 </button>
@@ -382,7 +356,7 @@ export default function DashboardPage() {
             ) : (
               <button
                 onClick={() => setConfirmClear(true)}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="btn-mini"
               >
                 Clear list
               </button>
@@ -390,20 +364,17 @@ export default function DashboardPage() {
           <button
             onClick={restoreFromRegistry}
             disabled={restoring}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:text-gray-400"
+            className="btn-mini disabled:text-moon-300/40"
           >
             {restoring ? "Restoring…" : "Restore registry"}
           </button>
           <button
             onClick={() => setAdding((v) => !v)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            className="btn-mini"
           >
             {adding ? "Cancel" : "Add by address"}
           </button>
-          <Link
-            href="/create"
-            className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800"
-          >
+          <Link href="/create" className="btn-primary px-3 py-1.5">
             New Survey
           </Link>
         </div>
@@ -412,14 +383,12 @@ export default function DashboardPage() {
       <FeedbackLoopPanel />
 
       {restoreMsg && (
-        <p className="mb-4 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-          {restoreMsg}
-        </p>
+        <p className="card mb-4 px-3 py-2 text-sm text-moon-200">{restoreMsg}</p>
       )}
 
       {adding && (
-        <div className="mb-6 rounded-lg border p-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+        <div className="card mb-6 p-4">
+          <label className="mb-1 block text-sm font-medium text-moon-200">
             Contract address
           </label>
           <input
@@ -427,33 +396,33 @@ export default function DashboardPage() {
             value={paste}
             onChange={(e) => setPaste(e.target.value)}
             placeholder="9b6e0eed1f8a8f2a79ed2db9fe35570e1ad30ab8f8c358c44bc4b7e06ed7eeff"
-            className="mb-2 w-full rounded-md border px-3 py-2 font-mono text-xs"
+            className="input-dark mb-2 font-mono text-xs"
           />
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-moon-300/70">
               Adds the on-chain survey to this list (metadata shown as generic
               labels unless this browser has it).
             </p>
             <button
               onClick={addByAddress}
               disabled={!paste.trim()}
-              className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
+              className="btn-primary ml-4 shrink-0 px-3 py-1.5"
             >
               Add
             </button>
           </div>
-          {addError && <p className="mt-2 text-sm text-red-600">{addError}</p>}
+          {addError && <p className="mt-2 text-sm text-rose-300">{addError}</p>}
         </div>
       )}
 
       {surveys === null ? (
-        <div className="py-12 text-center text-gray-500">Loading…</div>
+        <div className="py-12 text-center text-moon-300/60">Loading…</div>
       ) : sorted.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-10 text-center">
-          <p className="mb-2 text-gray-600">No surveys yet.</p>
-          <p className="text-sm text-gray-400">
+        <div className="card border-dashed p-10 text-center">
+          <p className="mb-2 text-moon-200">No surveys yet.</p>
+          <p className="text-sm text-moon-300/70">
             Deploy one from the{" "}
-            <Link href="/create" className="underline hover:text-gray-600">
+            <Link href="/create" className="underline hover:text-moon-100">
               create page
             </Link>
             , paste a contract address above, or click{" "}
@@ -469,7 +438,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <p className="mt-8 text-center text-xs text-gray-400">
+      <p className="mt-8 text-center text-xs text-moon-300/40">
         This list lives in this browser only (survey metadata is off-chain by
         design). The chain itself holds aggregate tallies per contract address.
       </p>

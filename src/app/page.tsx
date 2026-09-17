@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Landing page — hero, live survey banner, and a how-it-works strip.
+ * Landing page — hero, live survey banner, privacy model, how-it-works.
  *
  * The hero polls the public registry for the newest deployment and reads
  * its aggregate state from the ledger, so first-time visitors arriving
@@ -65,8 +65,8 @@ function LiveSurveyBanner() {
 
   if (live === "loading") {
     return (
-      <div className="mx-auto mb-10 max-w-xl animate-pulse rounded-lg border border-gray-100 bg-gray-50 p-4 text-center text-sm text-gray-400">
-        Checking for live surveys…
+      <div className="card mx-auto mb-10 max-w-xl animate-pulse p-4 text-center">
+        <div className="mx-auto h-4 w-56 rounded bg-white/10" />
       </div>
     );
   }
@@ -76,50 +76,64 @@ function LiveSurveyBanner() {
   return (
     <Link
       href={`/survey/${live.entry.id}`}
-      className="mx-auto mb-10 block max-w-xl rounded-lg border border-green-200 bg-green-50 p-4 text-center transition-colors hover:bg-green-100"
+      className="card card-hover mx-auto mb-10 block max-w-xl p-4 text-center"
     >
-      <p className="text-sm font-medium text-green-800">
-        {live.entry.title ?? "A survey"} is live —{" "}
-        {live.participants} participant{live.participants === 1 ? "" : "s"} so
-        far
+      <p className="text-sm font-medium text-moon-50">
+        <span className="pill pill-live mr-2">● live</span>
+        {live.entry.title ?? "A survey"} — {live.participants} participant
+        {live.participants === 1 ? "" : "s"} so far
       </p>
-      <p className="mt-0.5 text-xs text-green-600">
+      <p className="mt-1 text-xs text-moon-300/70">
         Anonymous · one response per wallet · takes under a minute
       </p>
     </Link>
   );
 }
 
-const STEPS = [
+const PHASES = [
   {
-    title: "1 · Deploy",
-    body: "An organizer connects Lace and creates a survey. Questions stay off-chain; the chain gets only a tally skeleton.",
+    icon: "🌑",
+    title: "New moon",
+    body: "Your answers are born in shadow — private witnesses that never touch the ledger.",
   },
   {
-    title: "2 · Prove",
-    body: "A respondent answers. Their wallet proves eligibility in ZK — identity and answers are witnesses, never transmitted.",
+    icon: "🌒",
+    title: "Waxing",
+    body: "Your wallet proves eligibility in ZK. Identity stays hidden; participation becomes provable.",
   },
   {
-    title: "3 · Count",
-    body: "The circuit rejects double votes via one-way nullifiers and discloses only aggregate tallies to the public ledger.",
+    icon: "🌓",
+    title: "Quarter",
+    body: "One-way nullifiers make double voting impossible without making voters traceable.",
   },
   {
-    title: "4 · Verify",
-    body: "Anyone reads the results from the indexer — no wallet, no login, no trust in the operator required.",
+    icon: "🌕",
+    title: "Full moon",
+    body: "Only the aggregate steps into the light: tallies and counts, verifiable by anyone.",
   },
 ];
 
-function HowItWorks() {
+function MoonPhases() {
   return (
-    <section className="pt-8">
-      <h2 className="mb-6 text-center text-xl font-semibold">How it works</h2>
+    <section className="pt-12">
+      <h2 className="mb-2 text-center text-2xl font-semibold text-moon-50">
+        From shadow to light
+      </h2>
+      <p className="mb-8 text-center text-sm text-moon-300/70">
+        At the new moon, the sky holds the moon entirely in shadow — present,
+        but unseen. So it is with every respondent.
+      </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STEPS.map((s) => (
-          <div key={s.title} className="rounded-lg border p-4">
-            <p className="mb-2 text-sm font-semibold text-gray-900">
-              {s.title}
-            </p>
-            <p className="text-sm text-gray-600">{s.body}</p>
+        {PHASES.map((p, i) => (
+          <div key={p.title} className="card card-hover relative p-5">
+            <span className="text-3xl">{p.icon}</span>
+            <p className="mt-3 text-sm font-semibold text-moon-50">{p.title}</p>
+            <p className="mt-1 text-sm text-moon-300">{p.body}</p>
+            {i < PHASES.length - 1 && (
+              <span className="absolute -right-3 top-1/2 hidden -translate-y-1/2 text-moon-300/40 lg:block">
+                →
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -129,30 +143,31 @@ function HowItWorks() {
 
 export default function Home() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
       {/* Hero */}
-      <section className="py-16 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight">
-          Anonymous Feedback.
+      <section className="py-20 text-center">
+        <p className="pill pill-warn mx-auto mb-6 inline-flex">
+          🌑 live on Midnight Preprod
+        </p>
+        <h1 className="mx-auto mb-6 max-w-2xl text-5xl font-bold leading-tight tracking-tight">
+          <span className="bg-moon-text bg-clip-text text-transparent">
+            Anonymous Feedback.
+          </span>
           <br />
-          <span className="text-gray-500">Verifiable Participation.</span>
+          <span className="text-moon-300/80">
+            Verifiable Participation.
+          </span>
         </h1>
-        <p className="mx-auto mb-8 max-w-lg text-gray-600">
+        <p className="mx-auto mb-10 max-w-xl text-moon-300">
           Create surveys where respondents prove eligibility via ZK proof
           without revealing their identity. Only aggregate tallies hit the
           public ledger.
         </p>
         <div className="flex justify-center gap-4">
-          <Link
-            href="/create"
-            className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800"
-          >
+          <Link href="/create" className="btn-primary">
             Create Survey
           </Link>
-          <Link
-            href="/dashboard"
-            className="rounded-md border border-gray-300 px-6 py-3 text-sm text-gray-700 hover:bg-gray-50"
-          >
+          <Link href="/dashboard" className="btn-ghost">
             View Dashboard
           </Link>
         </div>
@@ -164,8 +179,8 @@ export default function Home() {
       {/* Privacy model summary */}
       <PrivacyExplainer />
 
-      {/* How it works */}
-      <HowItWorks />
+      {/* Moon-phase narrative */}
+      <MoonPhases />
     </div>
   );
 }

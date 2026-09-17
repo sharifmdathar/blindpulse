@@ -60,7 +60,7 @@ export default function FeedbackPage() {
 
   if (live === "loading") {
     return (
-      <div className="py-12 text-center text-gray-500">
+      <div className="py-12 text-center text-moon-300/60">
         Looking for the live feedback survey…
       </div>
     );
@@ -69,15 +69,14 @@ export default function FeedbackPage() {
   if (!live) {
     return (
       <div className="py-12 text-center">
-        <h1 className="mb-2 text-2xl font-semibold">No feedback survey live</h1>
-        <p className="mb-6 text-gray-600">
+        <h1 className="mb-2 text-2xl font-semibold text-moon-50">
+          No feedback survey live
+        </h1>
+        <p className="mb-6 text-moon-300">
           There is no active survey in the public registry right now. Check
           back soon, or deploy one yourself.
         </p>
-        <Link
-          href="/dashboard"
-          className="rounded-md bg-black px-4 py-2 text-sm text-white"
-        >
+        <Link href="/dashboard" className="btn-primary">
           Go to Dashboard
         </Link>
       </div>
@@ -93,16 +92,16 @@ export default function FeedbackPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+      <div className="card mb-6 p-4 text-sm text-moon-300">
         This is BlindPulse eating its own cooking: the feedback survey runs
-        <span className="font-medium"> on BlindPulse itself</span>. Your
+        <span className="font-medium text-moon-100"> on BlindPulse itself</span>. Your
         answers are ZK witnesses — we see the aggregate, never you.
       </div>
 
-      <h1 className="mb-1 text-2xl font-semibold">
+      <h1 className="mb-1 text-2xl font-semibold text-moon-50">
         {live.entry.title ?? "Feedback"}
       </h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-moon-300/70">
         One anonymous response per wallet. Results are public on the ledger.
       </p>
 
@@ -113,15 +112,15 @@ export default function FeedbackPage() {
       {!isConnected ? (
         <div>
           <NewcomerHints />
-          <div className="rounded-lg border p-6 text-center">
-            <p className="mb-4 text-gray-600">
+          <div className="card p-6 text-center">
+            <p className="mb-4 text-moon-300">
               Connect your wallet to submit anonymously — your identity
               stays in shadow; only your answer is counted.
             </p>
             <button
               onClick={connect}
               disabled={status === "connecting"}
-              className="rounded-md bg-black px-6 py-3 text-sm text-white hover:bg-gray-800 disabled:bg-gray-400"
+              className="btn-primary px-6 py-3"
             >
               {status === "connecting" ? "Connecting…" : "Connect Wallet"}
             </button>
@@ -132,7 +131,10 @@ export default function FeedbackPage() {
       )}
 
       <p className="mt-8 text-center text-sm">
-        <Link href={`/results/${id}`} className="text-gray-500 underline hover:text-gray-700">
+        <Link
+          href={`/results/${id}`}
+          className="text-moon-300 underline hover:text-moon-100"
+        >
           See the live aggregate results
         </Link>
       </p>

@@ -18,17 +18,17 @@ interface GoogleFormFallbackProps {
 
 export default function GoogleFormFallback({ url }: GoogleFormFallbackProps) {
   return (
-    <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
-      <p className="font-medium text-amber-800">
-        Don&apos;t have a Lace wallet?
+    <div className="mb-6 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm">
+      <p className="font-medium text-amber-200">
+        Don&apos;t have a wallet?
       </p>
-      <p className="mt-1 text-amber-700">
+      <p className="mt-1 text-amber-100/80">
         You can{" "}
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:text-amber-900"
+          className="underline hover:text-amber-100"
         >
           fill this survey via Google Forms instead
         </a>
