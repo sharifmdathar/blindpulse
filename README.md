@@ -24,6 +24,11 @@ browser keeps its own list; `public/survey-registry.json` ships the known
 deployments so any browser can restore them via **Dashboard → Restore
 registry**, or a survey can be added by pasting its contract address.
 
+Shared links are self-contained: opening `/survey/<id>` or `/results/<id>`
+for a registry-known deployment restores its metadata automatically, so
+respondents see the real question text instead of generic labels. New
+deployments should be appended to `public/survey-registry.json`.
+
 ## Privacy Model
 
 - **PRIVATE**: respondent identity, individual responses, credential data

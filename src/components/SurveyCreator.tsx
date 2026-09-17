@@ -18,6 +18,25 @@ export default function SurveyCreator() {
     emptyQuestion(0),
   ]);
   const [deployedId, setDeployedId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  /**
+   * Copy the respondent-facing share link (/survey/<id>) to the clipboard.
+   * PUBLIC: the link contains only the public contract address.
+   */
+  const copyShareLink = async () => {
+    if (!deployedId) return;
+    const link = `${window.location.origin}/survey/${deployedId}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable (permissions / insecure context) — prompt lets
+      // the organizer copy manually instead of failing silently.
+      window.prompt("Copy the survey link:", link);
+    }
+  };
 
   const handleCountChange = (n: number) => {
     const clamped = Math.max(1, Math.min(20, n));
@@ -114,7 +133,17 @@ export default function SurveyCreator() {
           >
             View Results
           </Link>
+          <button
+            onClick={copyShareLink}
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            {copied ? "Copied ✓" : "Copy link"}
+          </button>
         </div>
+        <p className="mt-3 text-xs text-gray-500">
+          Shared links are self-contained — anyone opening them gets the
+          question text restored from the public registry automatically.
+        </p>
       </div>
     );
   }

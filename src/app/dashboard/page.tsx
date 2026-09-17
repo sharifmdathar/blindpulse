@@ -19,7 +19,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  applyRegistryEntry,
   clearSurveys,
+  fetchSurveyRegistry,
   getSurveys,
   removeSurvey,
   saveSurvey,
@@ -52,6 +54,22 @@ function SurveyRow({
 }) {
   const [status, setStatus] = useState<ChainStatus>({ loading: true });
   const [confirming, setConfirming] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  /**
+   * Copy the respondent-facing share link (/survey/<id>).
+   * PUBLIC: the link contains only the public contract address.
+   */
+  const copyShareLink = async () => {
+    const link = `${window.location.origin}/survey/${survey.id}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.prompt("Copy the survey link:", link);
+    }
+  };
 
   useEffect(() => {
     // Demo-mode ids ("0x…" random) never reached the chain — skip the lookup
@@ -137,6 +155,13 @@ function SurveyRow({
             Take Survey
           </Link>
         )}
+        <button
+          onClick={copyShareLink}
+          title="Copy the respondent link to this survey"
+          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          {copied ? "Copied ✓" : "Share"}
+        </button>
         {confirming ? (
           <span className="flex items-center gap-1">
             <button
@@ -187,7 +212,7 @@ export default function DashboardPage() {
     return Object.values(surveys).sort((a, b) => b.createdAt - a.createdAt);
   }, [surveys]);
 
-  const addByAddress = () => {
+  const addByAddress = async () => {
     const id = normalizeAddress(paste);
     if (!id) {
       setAddError("Enter a 64-hex-char contract address.");
@@ -197,13 +222,17 @@ export default function DashboardPage() {
       setAddError("That survey is already listed.");
       return;
     }
-    saveSurvey({
-      id,
-      title: `Survey ${id.slice(0, 10)}…`,
-      questionCount: 0,
-      questions: [],
-      createdAt: Date.now(),
-    });
+    // Registry-known addresses get their real metadata, not a generic title.
+    const restored = applyRegistryEntry(await fetchSurveyRegistry(), id);
+    if (!restored) {
+      saveSurvey({
+        id,
+        title: `Survey ${id.slice(0, 10)}…`,
+        questionCount: 0,
+        questions: [],
+        createdAt: Date.now(),
+      });
+    }
     setSurveys(getSurveys());
     setPaste("");
     setAddError(null);

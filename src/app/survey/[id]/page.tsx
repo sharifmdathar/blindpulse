@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useWallet } from "@/hooks/useWallet";
-import { getSurvey } from "@/lib/survey-store";
+import { restoreSurveyFromRegistry } from "@/lib/survey-store";
 import { getSurveyMetadata } from "@/lib/contract-api";
 import SurveyForm from "@/components/SurveyForm";
 import type { StoredSurvey } from "@/lib/survey-store";
@@ -23,9 +23,19 @@ export default function SurveyPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const s = getSurvey(surveyId);
-    setSurvey(s ?? null);
-    setLoaded(true);
+    // Self-contained shared links: use this browser's copy when present,
+    // otherwise restore metadata from the public registry so respondents
+    // opening someone else's link see real question text, not generic labels.
+    let cancelled = false;
+    restoreSurveyFromRegistry(surveyId).then((s) => {
+      if (!cancelled) {
+        setSurvey(s ?? null);
+        setLoaded(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [surveyId]);
 
   // PUBLIC read: pulls survey metadata straight from the ledger so

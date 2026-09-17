@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getSurvey } from "@/lib/survey-store";
+import { restoreSurveyFromRegistry } from "@/lib/survey-store";
 import { getSurveyMetadata } from "@/lib/contract-api";
 import ResultsDashboard from "@/components/ResultsDashboard";
 import type { StoredSurvey } from "@/lib/survey-store";
@@ -21,8 +21,19 @@ export default function ResultsPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setSurvey(getSurvey(surveyId) ?? null);
-    setLoaded(true);
+    // Self-contained shared links: restore metadata from the public
+    // registry when this browser has no local copy, so anyone opening a
+    // shared results link sees real question text, not generic labels.
+    let cancelled = false;
+    restoreSurveyFromRegistry(surveyId).then((s) => {
+      if (!cancelled) {
+        setSurvey(s ?? null);
+        setLoaded(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [surveyId]);
 
   // PUBLIC read: works for any visitor — pulls aggregate metadata straight
