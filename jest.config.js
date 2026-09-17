@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: "node",
   testMatch: ["**/*.test.ts"],
   transform: {
-    "^.+\\.ts$": [
+    "^.+\\.(ts|tsx|js|mjs)$": [
       "ts-jest",
       {
         tsconfig: {
@@ -19,4 +19,7 @@ module.exports = {
       },
     ],
   },
+  // @noble/hashes ships ESM-only ("type": "module"); let jest transform its
+  // files with ts-jest (module: commonjs) instead of leaving them as-is.
+  transformIgnorePatterns: ["node_modules/(?!(.pnpm/)?@noble)"],
 };

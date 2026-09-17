@@ -16,7 +16,6 @@ export interface UseSurveyReturn {
   createSurvey: (questionCount: number) => Promise<Survey | null>;
   submitResponse: (
     surveyId: string,
-    nullifier: Uint8Array,
     responses: number[],
   ) => Promise<boolean>;
   getResults: (surveyId: string) => Promise<SurveyResults | null>;
@@ -46,18 +45,15 @@ export function useSurvey(): UseSurveyReturn {
   );
 
   const  submitResponse = useCallback(
-    async (
-      surveyId: string,
-      nullifier: Uint8Array,
-      responses: number[],
-    ): Promise<boolean> => {
+    async (surveyId: string, responses: number[]): Promise<boolean> => {
       setLoading(true);
       setError(null);
       try {
-        // PRIVATE: nullifier, responses are private witnesses
-        // They enter the ZK circuit but NEVER appear on the public ledger
-        // nullifier is disclosed as a one-way hash (unlinkable)
-        await contract.submitResponse(surveyId, nullifier, responses);
+        // PRIVATE: nullifier (derived per-wallet inside contract-api) and
+        // responses are private witnesses. They enter the ZK circuit but
+        // NEVER appear on the public ledger — only the one-way digest and
+        // aggregate tallies are disclosed.
+        await contract.submitResponse(surveyId, responses);
         return true;
       } catch (err) {
         setError(

@@ -10,15 +10,11 @@ export function truncateAddress(address: string): string {
 }
 
 /**
- * Generate a nullifier from a credential.
- * In production this uses a one-way hash so the nullifier is
- * computationally unlinkable from the credential.
- * PRIVATE: credential input, PUBLIC: nullifier output
+ * NOTE: the nullifier is no longer generated here. It is derived per-wallet
+ * inside src/lib/midnight.ts (buildNullifier): BLAKE2b-256 over a
+ * domain-separated preimage of the wallet's coin public key and the survey
+ * id — deterministic per wallet per survey, one-way, unlinkable.
  */
-export function generateNullifier(credential: Uint8Array): Uint8Array {
-  // TODO: replace with real hash (e.g. Blake2b) when circuit is compiled
-  return credential.slice(0, 32);
-}
 
 /** Validate that responses array matches question count */
 export function validateResponses(

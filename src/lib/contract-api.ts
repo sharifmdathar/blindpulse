@@ -14,6 +14,7 @@ import {
   contractAddressToHex,
   ensureMidnightRuntime,
   hexToContractAddress,
+  buildNullifier,
 } from "./midnight";
 import { deployContract, findDeployedContract, getPublicStates } from "@midnight-ntwrk/midnight-js-contracts";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
@@ -138,17 +139,27 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
 
 /**
  * Submit responses with ZK proof of eligibility.
- * PRIVATE: nullifier, responses — NEVER written to ledger directly.
- * PUBLIC: nullifier is disclosed (one-way hash, unlinkable),
- *         only aggregate tally updates hit the ledger.
+ *
+ * The nullifier is derived INSIDE this function from the connected wallet's
+ * coin public key (BLAKE2b-256, domain-separated, bound to this survey) —
+ * deterministic per wallet per survey, one-way, unlinkable. The coin key
+ * never leaves the client; only the digest is disclosed on-chain.
+ *
+ * PRIVATE: nullifier preimage, responses — NEVER written to ledger directly.
+ * PUBLIC: nullifier digest (one-way, unlinkable), aggregate tally updates.
  */
 export async function submitResponse(
   surveyId: string,
-  nullifier: Uint8Array,
   responses: number[],
 ): Promise<void> {
   const api = getConnectedApi();
-  if (!api) return;
+  if (!api) {
+    throw new Error(
+      "Connect your Lace wallet to submit — anonymous on-chain responses require a wallet-proofed transaction.",
+    );
+  }
+
+  const nullifier = await buildNullifier(api, surveyId);
 
   const providers = await createContractProviders(api);
   const compiledContract = await getCompiledBlindPulse();

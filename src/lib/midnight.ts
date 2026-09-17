@@ -21,6 +21,7 @@ import type { ContractAddress } from "@midnight-ntwrk/midnight-js-protocol/compa
 import { initOnchainRuntime } from "./wasm/onchain-runtime-v3";
 import { initLedgerRuntime } from "./wasm/ledger-v8";
 import { createZkConfigProvider } from "./zk-config-provider";
+import { deriveNullifier, hexToBytes32 } from "./nullifier";
 
 type ManagedModule = typeof import("../../managed/contract/index.js");
 type BlindPulseWitnesses<T> =
@@ -288,4 +289,18 @@ export async function getWalletIdentity(
     coinPublicKey: hexToBytes(coinPk.toHexString()),
     encryptionPublicKey: hexToBytes(encPk.toHexString()),
   };
+}
+
+/**
+ * Derive this wallet's per-survey nullifier (see src/lib/nullifier.ts for
+ * the property documentation). PRIVATE: coin public key, used only as hash
+ * input and never transmitted. PUBLIC: the digest — one-way, unlinkable,
+ * deterministic per (wallet, survey).
+ */
+export async function buildNullifier(
+  api: ConnectedAPI,
+  surveyIdHex: string,
+): Promise<Uint8Array> {
+  const { coinPublicKey } = await getWalletIdentity(api);
+  return deriveNullifier(coinPublicKey, hexToBytes32(surveyIdHex));
 }

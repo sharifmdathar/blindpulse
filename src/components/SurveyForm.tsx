@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSurvey } from "@/hooks/useSurvey";
-import { generateNullifier, validateResponses } from "@/lib/utils";
+import { validateResponses } from "@/lib/utils";
 import { storeResponseLocally } from "@/lib/contract-api";
 
 interface SurveyFormProps {
@@ -32,16 +32,11 @@ export default function SurveyForm({
 
     if (!validateResponses(responses, questionCount)) return;
 
-    // Build private witness
-    // PRIVATE: credential, responses, nullifier NEVER enter public ledger
-    const credential = new Uint8Array(64).fill(
-      // In production: derived from wallet proof
-      0,
-    );
-    const nullifier = generateNullifier(credential);
-
-    // PRIVATE: nullifier and responses enter ZK circuit, never public ledger
-    const ok = await submitResponse(surveyId, nullifier, responses);
+    // PRIVATE: the nullifier is derived per-wallet inside contract-api
+    // (BLAKE2b of the coin public key, bound to this survey) and enters
+    // the ZK circuit — it never appears in the public ledger, and neither
+    // do the responses.
+    const ok = await submitResponse(surveyId, responses);
     if (!ok) return; // error already surfaced by the hook — stay on the form
     storeResponseLocally(surveyId, responses);
     setSubmitted(true);
