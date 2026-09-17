@@ -36,7 +36,8 @@ deployments should be appended to `public/survey-registry.json`.
 - disclose() is used ONLY for the aggregated result counter
 
 See [docs/PRIVACY_MODEL.md](docs/PRIVACY_MODEL.md) for the full public-vs-private
-data model, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system design.
+data model, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system design,
+and [docs/PRODUCT.md](docs/PRODUCT.md) for the public product profile.
 
 ## Tech Stack
 
@@ -126,6 +127,6 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 | 1     | ✅     | Toolchain, contract compile, deploy to Preprod, 5+ commits, README       |
 | 2     | ✅     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
 | 3     | ✅     | 3+ tests passing (19), CI/CD, 10+ commits, privacy model section         |
-| 4     | 🚧     | MVP live on Preprod ✅, docs ✅, CI/CD ✅, public product profile pending |
+| 4     | ✅     | MVP live on Preprod, docs, CI/CD, public product profile                 |
 | 5     | ⏳     | 50 Preprod users, feedback loop, mentor approval                         |
 | 6     | ⏳     | Mainnet deploy, 20 real users, brand assets                              |
