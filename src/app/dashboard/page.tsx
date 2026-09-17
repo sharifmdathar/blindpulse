@@ -27,7 +27,7 @@ import {
   saveSurvey,
   type StoredSurvey,
 } from "@/lib/survey-store";
-import { getSurveyMetadata } from "@/lib/contract-api";
+import { closeSurvey, getSurveyMetadata } from "@/lib/contract-api";
 
 type ChainStatus = {
   loading: boolean;
@@ -54,7 +54,29 @@ function SurveyRow({
 }) {
   const [status, setStatus] = useState<ChainStatus>({ loading: true });
   const [confirming, setConfirming] = useState(false);
+  const [confirmingClose, setConfirmingClose] = useState(false);
+  const [closed, setClosed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
+
+  /**
+   * Close the survey on-chain (organizer action from the dashboard).
+   * PUBLIC: surveyActive flips to false on the ledger. PRIVATE: nothing.
+   */
+  const handleClose = async () => {
+    setClosing(true);
+    setCloseError(null);
+    try {
+      await closeSurvey(survey.id);
+      setClosed(true);
+      setConfirmingClose(false);
+    } catch (err) {
+      setCloseError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setClosing(false);
+    }
+  };
 
   /**
    * Copy the respondent-facing share link (/survey/<id>).
@@ -107,7 +129,7 @@ function SurveyRow({
     <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
       not found on-chain
     </span>
-  ) : status.active ? (
+  ) : status.active && !closed ? (
     <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
       ongoing
     </span>
@@ -131,7 +153,7 @@ function SurveyRow({
           {status.loading
             ? "…"
             : status.live
-              ? `${status.participants ?? 0} participant${(status.participants ?? 0) === 1 ? "" : "s"}`
+              ? `${status.participants ?? 0} participant${(status.participants ?? 0) === 1 ? "" : "s"}${closed ? " · collection ended" : ""}`
               : status.demo
                 ? "Created without a wallet — responses tallied in this browser only."
                 : "No on-chain state found for this address."}
@@ -147,13 +169,43 @@ function SurveyRow({
         >
           Results
         </Link>
-        {status.active && (
+        {status.active && !closed && (
           <Link
             href={`/survey/${survey.id}`}
             className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-gray-800"
           >
             Take Survey
           </Link>
+        )}
+        {status.live && status.active && !closed && (
+          <>
+            {confirmingClose ? (
+              <span className="flex items-center gap-1">
+                <button
+                  onClick={handleClose}
+                  disabled={closing}
+                  title="Ends collection permanently — no further responses accepted"
+                  className="rounded-md bg-red-600 px-2 py-1.5 text-xs text-white hover:bg-red-700 disabled:bg-gray-400"
+                >
+                  {closing ? "Closing…" : "Confirm close"}
+                </button>
+                <button
+                  onClick={() => setConfirmingClose(false)}
+                  className="px-1 text-xs text-gray-500 hover:text-gray-700"
+                >
+                  keep
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setConfirmingClose(true)}
+                title="End collection permanently (on-chain)"
+                className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+              >
+                Close
+              </button>
+            )}
+          </>
         )}
         <button
           onClick={copyShareLink}
@@ -187,6 +239,9 @@ function SurveyRow({
           </button>
         )}
       </div>
+      {closeError && (
+        <p className="mt-2 w-full text-sm text-red-600">Close failed: {closeError}</p>
+      )}
     </div>
   );
 }

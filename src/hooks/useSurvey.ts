@@ -18,6 +18,7 @@ export interface UseSurveyReturn {
     surveyId: string,
     responses: number[],
   ) => Promise<boolean>;
+  closeSurvey: (surveyId: string) => Promise<boolean>;
   getResults: (surveyId: string) => Promise<SurveyResults | null>;
 }
 
@@ -67,6 +68,29 @@ export function useSurvey(): UseSurveyReturn {
     [],
   );
 
+  /**
+   * Close a survey on-chain. PUBLIC: surveyActive flips to false on the
+   * ledger. PRIVATE: nothing — no witness data is involved.
+   */
+  const closeSurvey = useCallback(
+    async (surveyId: string): Promise<boolean> => {
+      setLoading(true);
+      setError(null);
+      try {
+        await contract.closeSurvey(surveyId);
+        return true;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to close survey",
+        );
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   const getResults = useCallback(
     async (surveyId: string): Promise<SurveyResults | null> => {
       setLoading(true);
@@ -84,5 +108,5 @@ export function useSurvey(): UseSurveyReturn {
     [],
   );
 
-  return { loading, error, createSurvey, submitResponse, getResults };
+  return { loading, error, createSurvey, submitResponse, closeSurvey, getResults };
 }

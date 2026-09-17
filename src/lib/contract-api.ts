@@ -181,6 +181,37 @@ export async function submitResponse(
   }
 }
 
+/**
+ * Close a survey — deactivates it on-chain so no further responses are
+ * accepted. Intended for the organizer (the wallet that deployed).
+ * PUBLIC: surveyActive flips to false on the ledger — a public flag.
+ * PRIVATE: nothing — no witness data is involved in this transition.
+ *
+ * Note: the current contract circuit does not gate closeSurvey on the
+ * organizer identity, so anyone with a wallet could technically close a
+ * survey; the UI surfaces this action only on the organizer's dashboard.
+ */
+export async function closeSurvey(surveyId: string): Promise<void> {
+  const api = getConnectedApi();
+  if (!api) {
+    throw new Error("Connect your Lace wallet to close the survey.");
+  }
+
+  const providers = await createContractProviders(api);
+  const compiledContract = await getCompiledBlindPulse();
+  try {
+    const found = await findDeployedContract(providers, {
+      compiledContract,
+      contractAddress: hexToContractAddress(surveyId),
+    });
+    await found.callTx.closeSurvey();
+  } catch (err) {
+    console.error("On-chain closeSurvey failed:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to close survey: ${msg}`, { cause: err });
+  }
+}
+
 /** Store response locally for demo purposes */
 export function storeResponseLocally(surveyId: string, responses: number[]): void {
   saveResponse(surveyId, responses);
