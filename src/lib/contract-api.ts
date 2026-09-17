@@ -176,13 +176,48 @@ export async function submitResponse(
     const padded = Array.from({ length: MAX_Q }, (_, i) =>
       BigInt(responses[i] ?? 0),
     );
-    await found.callTx.submitResponse(nullifier, padded);
+    const result = await found.callTx.submitResponse(nullifier, padded);
+    // Defensive: tx id shape varies across midnight-js versions.
+    const txId =
+      (result as unknown as { txHash?: string })?.txHash ??
+      (result as unknown as { txId?: string })?.txId ??
+      null;
+    await recordParticipant(surveyId, txId);
   } catch (err) {
     // With a wallet connected, an on-chain failure must be visible — never
     // masquerade as success while only storing locally.
     console.error("On-chain submitResponse failed:", err);
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Response submission failed: ${msg}`, { cause: err });
+  }
+}
+
+/** localStorage key for the per-survey verifiable participant ledger */
+const PARTICIPANTS_KEY = "blindpulse_participants";
+
+/**
+ * Record a successful submit for the verifiable participant list
+ * (Levels 5–6 require a list of wallet addresses checkable on-chain).
+ * The unshielded address is the tx fee-payer — public data, visible on
+ * the explorer for this tx — so recording it locally discloses nothing
+ * the chain doesn't already show. Stored: address, tx id, timestamp.
+ * PRIVATE: never stored — responses, nullifier preimage, coin key.
+ */
+async function recordParticipant(surveyId: string, txId: string | null): Promise<void> {
+  try {
+    const api = getConnectedApi();
+    if (!api) return;
+    const { unshieldedAddress } = await api.getUnshieldedAddress();
+    const all: Record<string, Array<{ address: string; txId: string | null; at: number }>> =
+      JSON.parse(localStorage.getItem(PARTICIPANTS_KEY) ?? "{}");
+    const list = all[surveyId] ?? [];
+    // one entry per address per survey — mirrors the on-chain nullifier rule
+    if (list.some((p) => p.address === unshieldedAddress)) return;
+    list.push({ address: unshieldedAddress, txId, at: Date.now() });
+    all[surveyId] = list;
+    localStorage.setItem(PARTICIPANTS_KEY, JSON.stringify(all));
+  } catch {
+    // non-fatal: the on-chain submit already succeeded
   }
 }
 

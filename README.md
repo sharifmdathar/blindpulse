@@ -2,6 +2,10 @@
 
 > Anonymous Feedback & Surveys with Verifiable Participation on Midnight
 
+[![CI](https://github.com/sharifmdathar/blindpulse/actions/workflows/ci.yml/badge.svg)](https://github.com/sharifmdathar/blindpulse/actions/workflows/ci.yml)
+
+**Product X profile:** _pending — add handle_ · **Demo video:** _pending — see [docs/DEMO_VIDEO.md](docs/DEMO_VIDEO.md) shot list_
+
 ## What It Does
 
 Organizations create surveys. Respondents prove eligibility
@@ -74,6 +78,19 @@ Verify everything with: `bun run lint && bun run test && bun run build`
 `bun run compile` (→ `scripts/compile.sh`) enforces the compiler pin, and CI
 installs the same version. `managed/` output is `index.js` + `index.d.ts`
 (ESM bindings — imported as such from `src/lib`).
+
+## Submission Package (Levels 4–6)
+
+| Requirement | Status |
+| ----------- | ------ |
+| Working MVP live on Preprod | ✅ contract `d9a1605a…` (see above) — public demo URL pending hosting |
+| Documentation (README + setup + usage) | ✅ README, [docs/SETUP.md](docs/SETUP.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/PRIVACY_MODEL.md](docs/PRIVACY_MODEL.md) |
+| CI/CD pipeline with passing runs | ✅ [ci.yml](.github/workflows/ci.yml) — compile → test → build |
+| Product X profile linked here | ⏳ create the profile, then replace the placeholder above |
+| Demo video | ⏳ shot list ready in [docs/DEMO_VIDEO.md](docs/DEMO_VIDEO.md) |
+| 15 / 20 / 30 meaningful commits | ✅ 37+ conventional commits |
+| 50 (L5) / 70 (L6) Preprod users | ⏳ in progress — participant count is verifiable on-chain; export with `bun scripts/export-participants.ts` |
+| Feedback loop documented | ✅ [docs/LEVEL5.md](docs/LEVEL5.md) + `/feedback` page + Google Form fallback |
 
 ## Contract Address (Preprod)
 
