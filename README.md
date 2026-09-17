@@ -55,9 +55,18 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 
 ## Contract Address (Preprod)
 
-- **Contract address:** `92ef920564c1b67d8081f6eea8a880c7ac0904d601396ef87c16859b29ff8087`
-  (live survey — verify with `CONTRACT_ADDRESS=92ef… bun scripts/verify-deploy.ts`)
-- Earlier deployment (superseded): `c85d9e980809d76f7f0204be2730c752b0abfb5ae572c1fa038622c7a0ba7d4f`,
+- **Contract address:** `9b6e0eed1f8a8f2a79ed2db9fe35570e1ad30ab8f8c358c44bc4b7e06ed7eeff`
+  (live "App Feedback" survey — 1 question, rate 1–5 — verify with
+  `CONTRACT_ADDRESS=9b6e… bun scripts/verify-deploy.ts`)
+  Deployed from a clean nullifier set after the per-wallet BLAKE2b
+  nullifier fix, so every recorded vote uses the correct derivation.
+  Survey metadata (title, question, options) lives off-chain in the
+  organizer's browser; the contract ID links it to on-chain tallies.
+- Earlier deployment (superseded): `92ef920564c1b67d8081f6eea8a880c7ac0904d601396ef87c16859b29ff8087`
+  — predates the nullifier fix: its nullifier set contains the legacy
+  zero-byte stub digest, so wallets that voted before the fix could be
+  counted a second time alongside their old vote.
+- Earliest deployment (superseded): `c85d9e980809d76f7f0204be2730c752b0abfb5ae572c1fa038622c7a0ba7d4f`,
   deploy tx [`fb4b3947…33b4`](https://explorer.1am.xyz/tx/fb4b3947e02fce9be2b959ad5daedf3f81886ed3e0920a229fee2de7c4c233b4?network=preprod)
   (block 2,590,444) — retired because its circuit had a first-vote bug:
   tally cells were not pre-created, so any initial vote on an option
