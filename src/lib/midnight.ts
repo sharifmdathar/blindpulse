@@ -1,7 +1,6 @@
 import type { ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 import { setNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
-import { FetchZkConfigProvider } from "@midnight-ntwrk/midnight-js-fetch-zk-config-provider";
 import { dappConnectorProvingProvider } from "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider";
 import { createProofProvider } from "@midnight-ntwrk/midnight-js-types";
 import { CompiledContract } from "@midnight-ntwrk/midnight-js-protocol/compact-js";
@@ -21,10 +20,11 @@ import { MidnightBech32m, ShieldedCoinPublicKey, ShieldedEncryptionPublicKey } f
 import type { ContractAddress } from "@midnight-ntwrk/midnight-js-protocol/compact-runtime";
 import { initOnchainRuntime } from "./wasm/onchain-runtime-v3";
 import { initLedgerRuntime } from "./wasm/ledger-v8";
+import { createZkConfigProvider } from "./zk-config-provider";
 
-type ManagedModule = typeof import("../../managed/contract/index.cjs");
+type ManagedModule = typeof import("../../managed/contract/index.js");
 type BlindPulseWitnesses<T> =
-  import("../../managed/contract/index.cjs").Witnesses<T>;
+  import("../../managed/contract/index.js").Witnesses<T>;
 
 let _managed: ManagedModule | null = null;
 let _compiledBlindPulse: CompiledContract.CompiledContract<
@@ -37,7 +37,7 @@ async function getManaged(): Promise<ManagedModule> {
   if (typeof window === "undefined") {
     throw new Error("BlindPulse contract runtime is browser-only");
   }
-  if (!_managed) _managed = await import("../../managed/contract/index.cjs");
+  if (!_managed) _managed = await import("../../managed/contract/index.js");
   return _managed;
 }
 
@@ -204,7 +204,12 @@ async function createWalletBridge(
   const midnightProvider: MidnightProvider = {
     async submitTx(tx) {
       await api.submitTransaction(bytesToHex(tx.serialize()));
-      return bytesToHex(tx.serialize());
+      // midnight-js watches for finalization via the indexer using the value
+      // returned here as a TransactionOffset identifier. The indexer matches
+      // on tx *identifiers* (intent hashes), NOT the raw serialized tx nor
+      // the tx hash — returning anything else makes watchForTxData poll
+      // forever even though the tx confirmed on-chain.
+      return tx.identifiers()[0];
     },
   };
 
@@ -237,9 +242,7 @@ export async function createContractProviders(
     configuration.indexerWsUri,
   );
 
-  const zkConfigProvider = new FetchZkConfigProvider<BlindPulseCircuits>(
-    `${window.location.origin}/zk-artifacts`,
-  );
+  const zkConfigProvider = createZkConfigProvider<BlindPulseCircuits>();
 
   const proofProvider = createProofProvider(
     await dappConnectorProvingProvider(api, zkConfigProvider),

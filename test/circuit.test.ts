@@ -1,5 +1,5 @@
 // Circuit compilation artifacts test.
-// Verifies that `bun run compile` (compact 0.26.0, language 0.18) produced
+// Verifies that `bun run compile` (compact 0.31.0, language 0.23) produced
 // the circuits, keys, and contract bindings the frontend depends on.
 // Run after compile: `bun run compile && bun run test`.
 //
@@ -17,24 +17,27 @@ function sizeOf(rel: string): number {
 
 describe("Circuit artifacts", () => {
   test("compiles blindpulse.compact without errors", () => {
-    // Contract bindings (consumed by src/lib/midnight.ts)
-    expect(fs.existsSync(path.join(MANAGED, "contract", "index.cjs"))).toBe(
+    // Contract bindings (consumed by src/lib/midnight.ts) — ESM layout
+    expect(fs.existsSync(path.join(MANAGED, "contract", "index.js"))).toBe(
       true,
     );
-    expect(fs.existsSync(path.join(MANAGED, "contract", "index.d.cts"))).toBe(
+    expect(fs.existsSync(path.join(MANAGED, "contract", "index.d.ts"))).toBe(
       true,
     );
 
     const bindings = fs.readFileSync(
-      path.join(MANAGED, "contract", "index.cjs"),
+      path.join(MANAGED, "contract", "index.js"),
       "utf8",
     );
     // Both state-changing circuits are exported...
     expect(bindings).toContain("submitResponse");
     expect(bindings).toContain("closeSurvey");
     // ...along with the public-state decoder used by getResults().
-    expect(bindings).toContain("exports.ledger");
+    expect(bindings).toContain("function ledger");
     expect(bindings).toContain("class Contract");
+    // Bindings must target the pinned compact-runtime (0.16.0) — the old
+    // 0.26.0 output inlined a version check against 0.9.0 and crashed.
+    expect(bindings).toContain("checkRuntimeVersion('0.16.0')");
   });
 
   test("emits zkir + proving keys for submitResponse", () => {

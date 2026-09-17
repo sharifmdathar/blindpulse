@@ -19,7 +19,7 @@ import { deployContract, findDeployedContract, getPublicStates } from "@midnight
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
 import type { StateValue } from "@midnight-ntwrk/compact-runtime";
 
-type LedgerFn = typeof import("../../managed/contract/index.cjs").ledger;
+type LedgerFn = typeof import("../../managed/contract/index.js").ledger;
 let _ledger: LedgerFn | null = null;
 
 async function getLedger(): Promise<LedgerFn> {
@@ -27,7 +27,7 @@ async function getLedger(): Promise<LedgerFn> {
     throw new Error("BlindPulse contract runtime is browser-only");
   }
   if (!_ledger) {
-    ({ ledger: _ledger } = await import("../../managed/contract/index.cjs"));
+    ({ ledger: _ledger } = await import("../../managed/contract/index.js"));
   }
   return _ledger;
 }
@@ -36,10 +36,9 @@ async function getLedger(): Promise<LedgerFn> {
  * Decode public ledger state from indexer data.
  * PUBLIC: only aggregate tallies, participant count, survey metadata.
  *
- * NOTE: the generated ledger() types its parameter as StateValue, but at
- * runtime it builds QueryContext(ChargedState) — exactly what
- * getPublicStates returns — so this cast bridges the stale generated types.
- * Newer compiler output types the parameter as `StateValue | ChargedState`.
+ * NOTE: older generated ledger() types typed its parameter as StateValue only;
+ * the current bindings accept `StateValue | ChargedState` — exactly what
+ * getPublicStates returns — so this cast is now only a belt-and-braces bridge.
  */
 async function decodeLedger(data: unknown) {
   const ledger = await getLedger();
@@ -95,7 +94,14 @@ function readOnlyPublicDataProvider() {
   return indexerPublicDataProvider(indexerUri, indexerWsUri);
 }
 
-/** Deploy a new survey contract (constructor call) */
+/**
+ * Deploy a new survey contract (constructor call).
+ *
+ * Two modes:
+ * - Wallet connected: real Preprod deploy via Midnight.js. Any failure throws
+ *   (the UI shows it) — we never masquerade a local id as an on-chain address.
+ * - No wallet: local demo mode, returns a random local-only id.
+ */
 export async function createSurvey(questionCount: number): Promise<Survey> {
   const api = getConnectedApi();
   if (!api) {
@@ -108,9 +114,9 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
     };
   }
 
+  const providers = await createContractProviders(api);
+  const compiledContract = await getCompiledBlindPulse();
   try {
-    const providers = await createContractProviders(api);
-    const compiledContract = await getCompiledBlindPulse();
     const deployed = await deployContract(providers, {
       compiledContract,
       args: [new Uint8Array(32), BigInt(questionCount)],
@@ -124,14 +130,9 @@ export async function createSurvey(questionCount: number): Promise<Survey> {
       organizer: "",
       participantCount: 0,
     };
-  } catch {
-    return {
-      id: randomId(),
-      questionCount,
-      active: true,
-      organizer: "",
-      participantCount: 0,
-    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Contract deploy failed: ${msg}`, { cause: err });
   }
 }
 
@@ -160,8 +161,13 @@ export async function submitResponse(
       BigInt(responses[i] ?? 0),
     );
     await found.callTx.submitResponse(nullifier, padded);
-  } catch {
+  } catch (err) {
     // On-chain submission unavailable — caller stores locally as fallback.
+    // Surface the real cause in the console so failures are never silent.
+    console.error(
+      "On-chain submitResponse failed, falling back to local store:",
+      err,
+    );
   }
 }
 

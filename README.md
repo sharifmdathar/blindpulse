@@ -19,7 +19,7 @@ data model, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system desi
 
 ## Tech Stack
 
-- Compact 0.26.0 (language_version 0.18) smart contracts
+- Compact 0.31.0 (language_version 0.23) smart contracts
 - Midnight.js SDK 4.x + DApp Connector API (`@midnight-ntwrk/*`)
 - `@midnight-ntwrk/compact-runtime` 0.16.0 (pinned — see Toolchain below)
 - Lace Wallet (Preprod)
@@ -44,18 +44,22 @@ Verify everything with: `bun run lint && bun run test && bun run build`
 
 | Piece | Version | Why |
 | ----- | ------- | --- |
-| `compact` compiler | 0.26.0 (`compact update 0.26.0`) | Newer (0.31+) emits bindings needing compact-runtime 0.19+, which midnight-js 4.x types reject; older (0.23) only speaks language 0.15 (no `assert`, no `vector[i]`) |
-| Contract pragma | `language_version 0.18` | Highest the 0.26.0 toolchain accepts with full syntax |
+| `compact` compiler | 0.31.0 (`compact update 0.31.0`) | Newest compiler whose bindings target compact-runtime 0.16.0: 0.34 needs 0.19+ (rejected by midnight-js 4.x types), 0.30/0.29/0.28 expect runtime 0.15/0.14, and 0.26 emits an old bindings layout that crashes against the current runtime |
+| Contract pragma | `language_version 0.23` | Required by the 0.31.0 toolchain |
 | `@midnight-ntwrk/compact-runtime` | 0.16.0 | Pinned to midnight-js 4.x; the compiler output targets this API |
 | Node | 22 | Midnight SDK requirement |
 
 `bun run compile` (→ `scripts/compile.sh`) enforces the compiler pin, and CI
-installs the same version. `managed/` output is `index.cjs` + `index.d.cts`
-(CJS bindings — imported as such from `src/lib`).
+installs the same version. `managed/` output is `index.js` + `index.d.ts`
+(ESM bindings — imported as such from `src/lib`).
 
 ## Contract Address (Preprod)
 
-_To be added after deployment_
+- **Contract address:** `c85d9e980809d76f7f0204be2730c752b0abfb5ae572c1fa038622c7a0ba7d4f`
+- **Deploy tx:** [`fb4b3947e02fce9be2b959ad5daedf3f81886ed3e0920a229fee2de7c4c233b4`](https://explorer.1am.xyz/tx/fb4b3947e02fce9be2b959ad5daedf3f81886ed3e0920a229fee2de7c4c233b4?network=preprod) (block 2,590,444)
+- Deployed via the DApp (`/create`) through Lace + Midnight.js, per the
+  project constraint that deployment always goes through the SDK — never
+  raw RPC.
 
 ## Public State vs Private Witness
 
