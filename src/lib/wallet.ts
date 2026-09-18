@@ -8,7 +8,10 @@
  */
 
 import type { WalletState } from "./types";
-import type { InitialAPI, ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
+import type {
+  InitialAPI,
+  ConnectedAPI,
+} from "@midnight-ntwrk/dapp-connector-api";
 
 /** Use "preprod" for Midnight Preprod test network, "mainnet" for production */
 const NETWORK_ID = "preprod";
@@ -20,8 +23,7 @@ let connected = false;
 /** Find a Midnight-compatible wallet in the page context */
 function findWallet(): InitialAPI | undefined {
   const midnight = (window as unknown as Record<string, unknown>).midnight as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
 
   if (!midnight) return undefined;
 

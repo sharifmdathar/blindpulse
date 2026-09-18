@@ -38,7 +38,11 @@ function useActiveSurvey() {
         const meta = await getSurveyMetadata(entry.id);
         if (meta?.surveyActive) {
           if (!cancelled) {
-            setState({ status: "ready", entry, participants: meta.participantCount });
+            setState({
+              status: "ready",
+              entry,
+              participants: meta.participantCount,
+            });
           }
           return;
         }
@@ -85,8 +89,8 @@ export default function FeedbackLoopPanel() {
             Feedback loop · {entry.title ?? "Active survey"}
           </p>
           <p className="mt-0.5 text-xs text-moon-300">
-            {participants} of {LEVEL5_GOAL} respondents toward the Level 5
-            goal ·{" "}
+            {participants} of {LEVEL5_GOAL} respondents toward the Level 5 goal
+            ·{" "}
             <Link
               href={`/survey/${entry.id}`}
               className="underline hover:text-moon-50"

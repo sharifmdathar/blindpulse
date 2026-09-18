@@ -5,10 +5,10 @@ import { useWallet } from "@/hooks/useWallet";
 
 // Client-only: prevents the Midnight/WASM contract from being
 // evaluated during SSR.
-const SurveyCreator = dynamic(
-  () => import("@/components/SurveyCreator"),
-  { ssr: false, loading: () => <p className="text-moon-300/60">Loading…</p> }
-);
+const SurveyCreator = dynamic(() => import("@/components/SurveyCreator"), {
+  ssr: false,
+  loading: () => <p className="text-moon-300/60">Loading…</p>,
+});
 
 export default function CreateSurveyPage() {
   const { isConnected, connect, status } = useWallet();

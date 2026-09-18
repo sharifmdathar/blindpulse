@@ -18,13 +18,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </span>
             </Link>
             <nav className="flex items-center gap-4 text-sm">
-              <Link href="/dashboard" className="text-moon-300 transition-colors hover:text-moon-50">
+              <Link
+                href="/dashboard"
+                className="text-moon-300 transition-colors hover:text-moon-50"
+              >
                 Dashboard
               </Link>
-              <Link href="/create" className="text-moon-300 transition-colors hover:text-moon-50">
+              <Link
+                href="/create"
+                className="text-moon-300 transition-colors hover:text-moon-50"
+              >
                 Create
               </Link>
-              <Link href="/feedback" className="text-moon-300 transition-colors hover:text-moon-50">
+              <Link
+                href="/feedback"
+                className="text-moon-300 transition-colors hover:text-moon-50"
+              >
                 Feedback
               </Link>
             </nav>
@@ -39,7 +48,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t border-white/10 py-5 text-center text-xs text-moon-300/60">
         Anonymous Feedback. Verifiable Participation. Powered by Midnight. ·{" "}
-        <Link href="/feedback" className="transition-colors hover:text-moon-100">
+        <Link
+          href="/feedback"
+          className="transition-colors hover:text-moon-100"
+        >
           Give feedback on BlindPulse (anonymously, of course)
         </Link>
       </footer>

@@ -57,9 +57,7 @@ export default function SurveyPage() {
   }, [surveyId]);
 
   if (!loaded || !metaLoaded) {
-    return (
-      <div className="py-12 text-center text-moon-300/60">Loading…</div>
-    );
+    return <div className="py-12 text-center text-moon-300/60">Loading…</div>;
   }
 
   if (!survey) {
@@ -176,7 +174,9 @@ export default function SurveyPage() {
         {survey.questions.length} question{" "}
         {survey.questions.length !== 1 ? "(s)" : ""}
       </p>
-      {survey.googleFormUrl && <GoogleFormFallback url={survey.googleFormUrl} />}
+      {survey.googleFormUrl && (
+        <GoogleFormFallback url={survey.googleFormUrl} />
+      )}
       <SurveyForm
         surveyId={surveyId}
         questionCount={survey.questions.length}

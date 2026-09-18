@@ -22,7 +22,10 @@ export async function GET(
   const filePath = path.join(MANAGED_DIR, subdir, filename);
   try {
     const contents = await readFile(filePath);
-    const mime = subdir === "keys" ? "application/octet-stream" : "application/octet-stream";
+    const mime =
+      subdir === "keys"
+        ? "application/octet-stream"
+        : "application/octet-stream";
     return new NextResponse(new Uint8Array(contents), {
       headers: { "content-type": mime },
     });

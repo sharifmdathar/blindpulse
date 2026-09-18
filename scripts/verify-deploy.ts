@@ -14,15 +14,17 @@
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
 import { setNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
 import { getPublicStates } from "@midnight-ntwrk/midnight-js-contracts";
-import { decodeContractAddress, type ContractAddress } from "@midnight-ntwrk/ledger-v8";
+import {
+  decodeContractAddress,
+  type ContractAddress,
+} from "@midnight-ntwrk/ledger-v8";
 import { ledger, type Ledger } from "../managed/contract/index.js";
 
 const ADDRESS =
   process.env.CONTRACT_ADDRESS ??
   "c85d9e980809d76f7f0204be2730c752b0abfb5ae572c1fa038622c7a0ba7d4f";
 
-const INDEXER_URI =
-  "https://indexer.preprod.midnight.network/api/v4/graphql";
+const INDEXER_URI = "https://indexer.preprod.midnight.network/api/v4/graphql";
 const INDEXER_WS_URI =
   "wss://indexer.preprod.midnight.network/api/v4/graphql/ws";
 
@@ -34,9 +36,7 @@ function hexToBytes(hex: string): Uint8Array {
 
 async function main(): Promise<void> {
   setNetworkId("preprod");
-  const address: ContractAddress = decodeContractAddress(
-    hexToBytes(ADDRESS),
-  );
+  const address: ContractAddress = decodeContractAddress(hexToBytes(ADDRESS));
 
   const provider = indexerPublicDataProvider(INDEXER_URI, INDEXER_WS_URI);
   const { contractState } = await getPublicStates(provider, address);
@@ -58,7 +58,9 @@ async function main(): Promise<void> {
     .join("");
   console.log(
     "organizer:    ",
-    organizerHex === "0".repeat(64) ? "(all zeros — pre-gate deploy)" : organizerHex,
+    organizerHex === "0".repeat(64)
+      ? "(all zeros — pre-gate deploy)"
+      : organizerHex,
   );
 
   const tallies: Record<number, Record<number, number>> = {};

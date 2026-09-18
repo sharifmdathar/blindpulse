@@ -22,9 +22,7 @@ export default function SurveyPageClient() {
   }, [surveyId]);
 
   if (!loaded) {
-    return (
-      <div className="py-12 text-center text-gray-500">Loading...</div>
-    );
+    return <div className="py-12 text-center text-gray-500">Loading...</div>;
   }
 
   if (!survey) {
@@ -73,7 +71,8 @@ export default function SurveyPageClient() {
     <div>
       <h1 className="mb-2 text-xl font-semibold">{survey.title}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        {survey.questions.length} question{survey.questions.length !== 1 ? "s" : ""}
+        {survey.questions.length} question
+        {survey.questions.length !== 1 ? "s" : ""}
       </p>
       <SurveyForm
         surveyId={surveyId}

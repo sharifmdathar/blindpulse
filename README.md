@@ -14,13 +14,13 @@ identity. Only aggregate tallies hit the public ledger.
 
 ## DApp Pages
 
-| Route          | Who                    | What                                                                    |
-| -------------- | ---------------------- | ----------------------------------------------------------------------- |
-| `/`            | anyone                 | Landing + privacy explainer                                             |
-| `/create`      | organizer (wallet)     | Deploy a survey contract through Lace + Midnight.js                     |
-| `/survey/[id]` | respondent (wallet)    | Submit an anonymous, ZK-proofed response                                |
-| `/results/[id]`| anyone                 | Public aggregate results for one survey (deep-linkable, no wallet)      |
-| `/dashboard`   | organizer / public     | All known surveys with live on-chain status, restore registry, add by address |
+| Route           | Who                 | What                                                                          |
+| --------------- | ------------------- | ----------------------------------------------------------------------------- |
+| `/`             | anyone              | Landing + privacy explainer                                                   |
+| `/create`       | organizer (wallet)  | Deploy a survey contract through Lace + Midnight.js                           |
+| `/survey/[id]`  | respondent (wallet) | Submit an anonymous, ZK-proofed response                                      |
+| `/results/[id]` | anyone              | Public aggregate results for one survey (deep-linkable, no wallet)            |
+| `/dashboard`    | organizer / public  | All known surveys with live on-chain status, restore registry, add by address |
 
 Survey metadata (title, questions, options) is off-chain by design — the
 chain only stores aggregate tallies per contract address. Each deploying
@@ -68,12 +68,12 @@ Verify everything with: `bun run lint && bun run test && bun run build`
 
 ## Toolchain (pinned — do not float)
 
-| Piece | Version | Why |
-| ----- | ------- | --- |
-| `compact` compiler | 0.31.0 (`compact update 0.31.0`) | Newest compiler whose bindings target compact-runtime 0.16.0: 0.34 needs 0.19+ (rejected by midnight-js 4.x types), 0.30/0.29/0.28 expect runtime 0.15/0.14, and 0.26 emits an old bindings layout that crashes against the current runtime |
-| Contract pragma | `language_version 0.23` | Required by the 0.31.0 toolchain |
-| `@midnight-ntwrk/compact-runtime` | 0.16.0 | Pinned to midnight-js 4.x; the compiler output targets this API |
-| Node | 22 | Midnight SDK requirement |
+| Piece                             | Version                          | Why                                                                                                                                                                                                                                         |
+| --------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compact` compiler                | 0.31.0 (`compact update 0.31.0`) | Newest compiler whose bindings target compact-runtime 0.16.0: 0.34 needs 0.19+ (rejected by midnight-js 4.x types), 0.30/0.29/0.28 expect runtime 0.15/0.14, and 0.26 emits an old bindings layout that crashes against the current runtime |
+| Contract pragma                   | `language_version 0.23`          | Required by the 0.31.0 toolchain                                                                                                                                                                                                            |
+| `@midnight-ntwrk/compact-runtime` | 0.16.0                           | Pinned to midnight-js 4.x; the compiler output targets this API                                                                                                                                                                             |
+| Node                              | 22                               | Midnight SDK requirement                                                                                                                                                                                                                    |
 
 `bun run compile` (→ `scripts/compile.sh`) enforces the compiler pin, and CI
 installs the same version. `managed/` output is `index.js` + `index.d.ts`
@@ -81,23 +81,23 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 
 ## Submission Package (Levels 4–6)
 
-| Requirement | Status |
-| ----------- | ------ |
-| Working MVP live on Preprod | ✅ contract `d9a1605a…` (see above) — public demo URL pending hosting |
+| Requirement                            | Status                                                                                                                                  |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Working MVP live on Preprod            | ✅ contract `d9a1605a…` (see above) — public demo URL pending hosting                                                                   |
 | Documentation (README + setup + usage) | ✅ README, [docs/SETUP.md](docs/SETUP.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/PRIVACY_MODEL.md](docs/PRIVACY_MODEL.md) |
-| CI/CD pipeline with passing runs | ✅ [ci.yml](.github/workflows/ci.yml) — compile → test → build |
-| Product X profile linked here | ⏳ create the profile, then replace the placeholder above |
-| Demo video | ⏳ shot list ready in [docs/DEMO_VIDEO.md](docs/DEMO_VIDEO.md) |
-| 15 / 20 / 30 meaningful commits | ✅ 37+ conventional commits |
-| 50 (L5) / 70 (L6) Preprod users | ⏳ in progress — participant count is verifiable on-chain; export with `bun scripts/export-participants.ts` |
-| Feedback loop documented | ✅ [docs/LEVEL5.md](docs/LEVEL5.md) + `/feedback` page + Google Form fallback |
+| CI/CD pipeline with passing runs       | ✅ [ci.yml](.github/workflows/ci.yml) — compile → test → build                                                                          |
+| Product X profile linked here          | ⏳ create the profile, then replace the placeholder above                                                                               |
+| Demo video                             | ⏳ shot list ready in [docs/DEMO_VIDEO.md](docs/DEMO_VIDEO.md)                                                                          |
+| 15 / 20 / 30 meaningful commits        | ✅ 37+ conventional commits                                                                                                             |
+| 50 (L5) / 70 (L6) Preprod users        | ⏳ in progress — participant count is verifiable on-chain; export with `bun scripts/export-participants.ts`                             |
+| Feedback loop documented               | ✅ [docs/LEVEL5.md](docs/LEVEL5.md) + `/feedback` page + Google Form fallback                                                           |
 
 ## Contract Address (Preprod)
 
 - **Contract address:** `d9a1605a0ada136ffe075736784a28b6e58c876ad53825fe1be0d23dfda5f132`
   (live "BlindPulse Beta Feedback" survey — 3 questions, deployed on the
   organizer-gated contract — verify with `CONTRACT_ADDRESS=d9a160… bun
-  scripts/verify-deploy.ts`). The constructor recorded the deploying
+scripts/verify-deploy.ts`). The constructor recorded the deploying
   wallet's coin public key as organizer, so `closeSurvey` is now
   in-circuit gated to that wallet. A Google Form fallback for
   wallet-free respondents is advertised on the survey pages
@@ -145,11 +145,11 @@ installs the same version. `managed/` output is `index.js` + `index.d.ts`
 
 ## Levels
 
-| Level | Status | Requirements                                                             |
-| ----- | ------ | ------------------------------------------------------------------------ |
-| 1     | ✅     | Toolchain, contract compile, deploy to Preprod, 5+ commits, README       |
-| 2     | ✅     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits |
-| 3     | ✅     | 3+ tests passing (19), CI/CD, 10+ commits, privacy model section         |
-| 4     | ✅     | MVP live on Preprod, docs, CI/CD, public product profile                 |
+| Level | Status | Requirements                                                                                |
+| ----- | ------ | ------------------------------------------------------------------------------------------- |
+| 1     | ✅     | Toolchain, contract compile, deploy to Preprod, 5+ commits, README                          |
+| 2     | ✅     | Lace wallet connect, circuit from frontend, privacy behavior, 8+ commits                    |
+| 3     | ✅     | 3+ tests passing (19), CI/CD, 10+ commits, privacy model section                            |
+| 4     | ✅     | MVP live on Preprod, docs, CI/CD, public product profile                                    |
 | 5     | 🚧     | [Level 5 runbook](docs/LEVEL5.md): recruitment kit, feedback loop panel, mentor demo script |
-| 6     | ⏳     | Mainnet deploy, 20 real users, brand assets                              |
+| 6     | ⏳     | Mainnet deploy, 20 real users, brand assets                                                 |

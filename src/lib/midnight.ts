@@ -16,7 +16,11 @@ import type {
   WalletProvider,
   MidnightProvider,
 } from "@midnight-ntwrk/midnight-js-types";
-import { MidnightBech32m, ShieldedCoinPublicKey, ShieldedEncryptionPublicKey } from "@midnight-ntwrk/wallet-sdk-address-format";
+import {
+  MidnightBech32m,
+  ShieldedCoinPublicKey,
+  ShieldedEncryptionPublicKey,
+} from "@midnight-ntwrk/wallet-sdk-address-format";
 import type { ContractAddress } from "@midnight-ntwrk/midnight-js-protocol/compact-runtime";
 import { initOnchainRuntime } from "./wasm/onchain-runtime-v3";
 import { initLedgerRuntime } from "./wasm/ledger-v8";
@@ -66,8 +70,6 @@ export async function getCompiledBlindPulse(): Promise<
 
   return _compiledBlindPulse;
 }
-
-
 
 /** Circuit IDs matching managed/keys and managed/zkir filenames */
 export type BlindPulseCircuits = "submitResponse" | "closeSurvey";
@@ -169,7 +171,10 @@ function hexToBytes(hex: string): Uint8Array {
  */
 async function createWalletBridge(
   api: ConnectedAPI,
-): Promise<{ walletProvider: WalletProvider; midnightProvider: MidnightProvider }> {
+): Promise<{
+  walletProvider: WalletProvider;
+  midnightProvider: MidnightProvider;
+}> {
   const addresses = await api.getShieldedAddresses();
   const coinPk = ShieldedCoinPublicKey.codec.decode(
     NETWORK_ID,

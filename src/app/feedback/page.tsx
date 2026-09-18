@@ -73,8 +73,8 @@ export default function FeedbackPage() {
           No feedback survey live
         </h1>
         <p className="mb-6 text-moon-300">
-          There is no active survey in the public registry right now. Check
-          back soon, or deploy one yourself.
+          There is no active survey in the public registry right now. Check back
+          soon, or deploy one yourself.
         </p>
         <Link href="/dashboard" className="btn-primary">
           Go to Dashboard
@@ -94,8 +94,8 @@ export default function FeedbackPage() {
     <div className="mx-auto max-w-2xl">
       <div className="card mb-6 p-4 text-sm text-moon-300">
         This is BlindPulse eating its own cooking: the feedback survey runs
-        <span className="font-medium text-moon-100"> on BlindPulse itself</span>. Your
-        answers are ZK witnesses — we see the aggregate, never you.
+        <span className="font-medium text-moon-100"> on BlindPulse itself</span>
+        . Your answers are ZK witnesses — we see the aggregate, never you.
       </div>
 
       <h1 className="mb-1 text-2xl font-semibold text-moon-50">
@@ -114,8 +114,8 @@ export default function FeedbackPage() {
           <NewcomerHints />
           <div className="card p-6 text-center">
             <p className="mb-4 text-moon-300">
-              Connect your wallet to submit anonymously — your identity
-              stays in shadow; only your answer is counted.
+              Connect your wallet to submit anonymously — your identity stays in
+              shadow; only your answer is counted.
             </p>
             <button
               onClick={connect}
@@ -127,7 +127,11 @@ export default function FeedbackPage() {
           </div>
         </div>
       ) : (
-        <SurveyForm surveyId={id} questionCount={questions.length} questions={questions} />
+        <SurveyForm
+          surveyId={id}
+          questionCount={questions.length}
+          questions={questions}
+        />
       )}
 
       <p className="mt-8 text-center text-sm">

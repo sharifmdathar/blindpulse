@@ -143,10 +143,9 @@ export default function SurveyCreator() {
         <div className="mb-4 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] p-3 text-xs text-amber-200">
           <p className="font-medium">One manual step to stay shareable:</p>
           <p className="mt-1">
-            Click below and append the copied JSON to the{" "}
-            <code>surveys</code> array in{" "}
-            <code>public/survey-registry.json</code>, then commit. Until then,
-            other browsers see generic labels on your survey pages.
+            Click below and append the copied JSON to the <code>surveys</code>{" "}
+            array in <code>public/survey-registry.json</code>, then commit.
+            Until then, other browsers see generic labels on your survey pages.
           </p>
         </div>
         <div className="mb-4 flex gap-2">
@@ -213,7 +212,10 @@ export default function SurveyCreator() {
 
         <div className="space-y-4">
           {questions.map((q, qi) => (
-            <div key={qi} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+            <div
+              key={qi}
+              className="rounded-lg border border-white/10 bg-white/[0.02] p-3"
+            >
               <label className="mb-1 block text-xs font-medium text-moon-300">
                 Question {qi + 1}
               </label>

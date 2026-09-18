@@ -52,9 +52,7 @@ export default function ResultsPage() {
   }, [surveyId]);
 
   if (!loaded || !metaLoaded) {
-    return (
-      <div className="py-12 text-center text-moon-300/60">Loading…</div>
-    );
+    return <div className="py-12 text-center text-moon-300/60">Loading…</div>;
   }
 
   if (!survey) {

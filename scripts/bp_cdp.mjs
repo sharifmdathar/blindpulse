@@ -20,7 +20,7 @@ const TARGET_MATCH = process.argv.includes("--target")
   : "localhost:3000";
 
 async function getTargets() {
-  return (await (await fetch(`${DEV}/json/list`)).json());
+  return await (await fetch(`${DEV}/json/list`)).json();
 }
 
 function connect(wsUrl) {
@@ -44,7 +44,9 @@ function connect(wsUrl) {
     ready.then(() => {
       const myId = ++id;
       ws.send(JSON.stringify({ id: myId, method, params }));
-      return new Promise((resolve, reject) => pending.set(myId, { resolve, reject }));
+      return new Promise((resolve, reject) =>
+        pending.set(myId, { resolve, reject }),
+      );
     });
   return { ws, send };
 }
@@ -72,7 +74,9 @@ async function evalExpr(send, expr) {
   });
   if (r.exceptionDetails) {
     const d = r.exceptionDetails;
-    throw new Error(d.exception?.description ?? JSON.stringify(d).slice(0, 400));
+    throw new Error(
+      d.exception?.description ?? JSON.stringify(d).slice(0, 400),
+    );
   }
   return r.result?.value;
 }
@@ -104,22 +108,22 @@ async function trustedClick(send, text) {
 
 const targets = await getTargets();
 if (cmd === "targets") {
-  for (const t of targets) console.log(t.type, "|", t.title.slice(0, 55), "|", t.url.slice(0, 90));
+  for (const t of targets)
+    console.log(t.type, "|", t.title.slice(0, 55), "|", t.url.slice(0, 90));
   process.exit(0);
 }
 if (!cmd || !["eval", "click"].includes(cmd)) {
-  console.error("usage: bun scripts/bp_cdp.mjs eval '<js>' | click '<text>' | targets");
+  console.error(
+    "usage: bun scripts/bp_cdp.mjs eval '<js>' | click '<text>' | targets",
+  );
   process.exit(1);
 }
 
-await withPage(
-  async (send) => {
-    if (cmd === "eval") {
-      console.log(String(await evalExpr(send, rest[0])));
-    } else {
-      const label = await trustedClick(send, rest[0]);
-      console.log(`trusted-clicked: ${label}`);
-    }
-  },
-  TARGET_MATCH,
-);
+await withPage(async (send) => {
+  if (cmd === "eval") {
+    console.log(String(await evalExpr(send, rest[0])));
+  } else {
+    const label = await trustedClick(send, rest[0]);
+    console.log(`trusted-clicked: ${label}`);
+  }
+}, TARGET_MATCH);

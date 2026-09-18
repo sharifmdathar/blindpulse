@@ -35,9 +35,7 @@ export async function GET(
   }
 
   try {
-    const bytes = await readFile(
-      path.join(process.cwd(), "node_modules", rel),
-    );
+    const bytes = await readFile(path.join(process.cwd(), "node_modules", rel));
     return new NextResponse(bytes, {
       headers: {
         "Content-Type": "application/wasm",

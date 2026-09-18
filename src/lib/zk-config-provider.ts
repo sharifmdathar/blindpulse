@@ -15,7 +15,12 @@
  * PUBLIC: serves only compiled circuit artifacts. No private data flows here.
  */
 
-import { createProverKey, createVerifierKey, createZKIR, ZKConfigProvider } from "@midnight-ntwrk/midnight-js-types";
+import {
+  createProverKey,
+  createVerifierKey,
+  createZKIR,
+  ZKConfigProvider,
+} from "@midnight-ntwrk/midnight-js-types";
 
 const BASE_URL = "/zk-artifacts";
 
@@ -48,7 +53,9 @@ async function fetchArtifact(
 }
 
 class BrowserZkConfigProvider<K extends string> extends ZKConfigProvider<K> {
-  async getProverKey(circuitId: K): Promise<ReturnType<typeof createProverKey>> {
+  async getProverKey(
+    circuitId: K,
+  ): Promise<ReturnType<typeof createProverKey>> {
     return createProverKey(
       await fetchArtifact(`keys/${circuitId}.prover`, circuitId, "prover key"),
     );
@@ -78,6 +85,8 @@ class BrowserZkConfigProvider<K extends string> extends ZKConfigProvider<K> {
  * proving) and the deploy transaction (verifier-key embedding).
  * PUBLIC: circuit artifacts only; no witness data passes through.
  */
-export function createZkConfigProvider<K extends string>(): ZKConfigProvider<K> {
+export function createZkConfigProvider<
+  K extends string,
+>(): ZKConfigProvider<K> {
   return new BrowserZkConfigProvider<K>();
 }

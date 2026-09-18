@@ -63,7 +63,7 @@ When sharing publicly, prefix localhost URLs with your public host
 2. **Deploy live** — connect wallet, create a 1-question survey,
    approve, show the green panel with contract ID
 3. **Vote from a second wallet** — answer, submit, show the aggregate
-   move on the results page *in the same browser without any login*
+   move on the results page _in the same browser without any login_
 4. **Double-vote proof** — submit again from the same wallet; show the
    friendly amber rejection; reload results to prove the count didn't
    change
@@ -79,7 +79,7 @@ When sharing publicly, prefix localhost URLs with your public host
 - [ ] 50 distinct on-chain participants on the Beta Feedback survey
       (or mentor-approved equivalent cohort across surveys)
 - [ ] Feedback reviewed: on-chain tallies + Google Form responses
-- [ ] At least one improvement shipped *because of* feedback
+- [ ] At least one improvement shipped _because of_ feedback
       (document it in this file with a dated note)
 - [ ] Mentor demo completed; approval noted here with date
 

@@ -14,10 +14,7 @@ export interface UseSurveyReturn {
   loading: boolean;
   error: string | null;
   createSurvey: (questionCount: number) => Promise<Survey | null>;
-  submitResponse: (
-    surveyId: string,
-    responses: number[],
-  ) => Promise<boolean>;
+  submitResponse: (surveyId: string, responses: number[]) => Promise<boolean>;
   closeSurvey: (surveyId: string) => Promise<boolean>;
   getResults: (surveyId: string) => Promise<SurveyResults | null>;
 }
@@ -45,7 +42,7 @@ export function useSurvey(): UseSurveyReturn {
     [],
   );
 
-  const  submitResponse = useCallback(
+  const submitResponse = useCallback(
     async (surveyId: string, responses: number[]): Promise<boolean> => {
       setLoading(true);
       setError(null);
@@ -80,9 +77,7 @@ export function useSurvey(): UseSurveyReturn {
         await contract.closeSurvey(surveyId);
         return true;
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to close survey",
-        );
+        setError(err instanceof Error ? err.message : "Failed to close survey");
         return false;
       } finally {
         setLoading(false);
@@ -108,5 +103,12 @@ export function useSurvey(): UseSurveyReturn {
     [],
   );
 
-  return { loading, error, createSurvey, submitResponse, closeSurvey, getResults };
+  return {
+    loading,
+    error,
+    createSurvey,
+    submitResponse,
+    closeSurvey,
+    getResults,
+  };
 }

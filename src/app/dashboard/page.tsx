@@ -163,7 +163,10 @@ function SurveyRow({
           Results
         </Link>
         {status.active && !closed && (
-          <Link href={`/survey/${survey.id}`} className="btn-primary px-3 py-1.5">
+          <Link
+            href={`/survey/${survey.id}`}
+            className="btn-primary px-3 py-1.5"
+          >
             Take Survey
           </Link>
         )}
@@ -368,10 +371,7 @@ export default function DashboardPage() {
           >
             {restoring ? "Restoring…" : "Restore registry"}
           </button>
-          <button
-            onClick={() => setAdding((v) => !v)}
-            className="btn-mini"
-          >
+          <button onClick={() => setAdding((v) => !v)} className="btn-mini">
             {adding ? "Cancel" : "Add by address"}
           </button>
           <Link href="/create" className="btn-primary px-3 py-1.5">
@@ -383,7 +383,9 @@ export default function DashboardPage() {
       <FeedbackLoopPanel />
 
       {restoreMsg && (
-        <p className="card mb-4 px-3 py-2 text-sm text-moon-200">{restoreMsg}</p>
+        <p className="card mb-4 px-3 py-2 text-sm text-moon-200">
+          {restoreMsg}
+        </p>
       )}
 
       {adding && (

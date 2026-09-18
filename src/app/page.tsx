@@ -154,9 +154,7 @@ export default function Home() {
             Anonymous Feedback.
           </span>
           <br />
-          <span className="text-moon-300/80">
-            Verifiable Participation.
-          </span>
+          <span className="text-moon-300/80">Verifiable Participation.</span>
         </h1>
         <p className="mx-auto mb-10 max-w-xl text-moon-300">
           Create surveys where respondents prove eligibility via ZK proof

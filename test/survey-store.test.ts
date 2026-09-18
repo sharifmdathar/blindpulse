@@ -41,12 +41,18 @@ const registryPayload = JSON.stringify({
 });
 
 const globalRef = globalThis as unknown as {
-  fetch: (input: string) => Promise<{ ok: boolean; status?: number; json: () => Promise<unknown> }>;
+  fetch: (
+    input: string,
+  ) => Promise<{ ok: boolean; status?: number; json: () => Promise<unknown> }>;
 };
 
 globalRef.fetch = async (input: string) => {
   if (input === "/survey-registry.json") {
-    return { ok: true, status: 200, json: async () => JSON.parse(registryPayload) };
+    return {
+      ok: true,
+      status: 200,
+      json: async () => JSON.parse(registryPayload),
+    };
   }
   return { ok: false, status: 404, json: async () => ({}) };
 };
@@ -78,7 +84,11 @@ describe("fetchSurveyRegistry", () => {
 
   test("returns null on a failed fetch instead of throwing", async () => {
     const before = globalRef.fetch;
-    globalRef.fetch = async () => ({ ok: false, status: 500, json: async () => ({}) });
+    globalRef.fetch = async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
     expect(await fetchSurveyRegistry()).toBeNull();
     globalRef.fetch = before;
   });
@@ -101,9 +111,7 @@ describe("applyRegistryEntry", () => {
         {
           id: APP_FEEDBACK,
           title: "App Feedback",
-          questions: [
-            { index: 0, text: "Rate this app", options: ["1", "2"] },
-          ],
+          questions: [{ index: 0, text: "Rate this app", options: ["1", "2"] }],
         },
       ],
     };

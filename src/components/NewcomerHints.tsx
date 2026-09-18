@@ -40,8 +40,8 @@ export default function NewcomerHints() {
         <li>Click Connect Wallet above and approve in the wallet.</li>
       </ol>
       <p className="mt-2 text-xs text-moon-300/60">
-        No wallet and just want to answer? If this survey offers a Google
-        Form fallback, it appears on this page.
+        No wallet and just want to answer? If this survey offers a Google Form
+        fallback, it appears on this page.
       </p>
     </div>
   );

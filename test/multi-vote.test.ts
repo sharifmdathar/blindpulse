@@ -156,12 +156,12 @@ describe("multi-vote (per-wallet per-survey nullifiers vs contract nullifier set
     simulateConstructor(ledgerA, 1);
     simulateConstructor(ledgerB, 1);
 
-    expect(submit(ledgerA, wallet(7), SURVEY_A, [0, ...Array(19).fill(0)])).toBe(
-      "ok",
-    );
-    expect(submit(ledgerB, wallet(7), SURVEY_B, [1, ...Array(19).fill(0)])).toBe(
-      "ok",
-    );
+    expect(
+      submit(ledgerA, wallet(7), SURVEY_A, [0, ...Array(19).fill(0)]),
+    ).toBe("ok");
+    expect(
+      submit(ledgerB, wallet(7), SURVEY_B, [1, ...Array(19).fill(0)]),
+    ).toBe("ok");
 
     // Both surveys honestly count the same human once each
     expect(ledgerA.participantCount).toBe(1);

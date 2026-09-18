@@ -29,7 +29,10 @@ const ws = new WebSocket(page.webSocketDebuggerUrl);
 const send = (msg) => ws.send(JSON.stringify(msg));
 const recv = () =>
   new Promise((resolve, reject) => {
-    const to = setTimeout(() => reject(new Error("ws recv timeout (60s)")), 60_000);
+    const to = setTimeout(
+      () => reject(new Error("ws recv timeout (60s)")),
+      60_000,
+    );
     ws.onmessage = (ev) => {
       const m = JSON.parse(ev.data);
       if (m.id === 1) {
@@ -58,7 +61,10 @@ ws.close();
 const r = reply.result ?? {};
 if (r.exceptionDetails) {
   const d = r.exceptionDetails;
-  console.error("EXCEPTION:", d.exception?.description ?? JSON.stringify(d).slice(0, 500));
+  console.error(
+    "EXCEPTION:",
+    d.exception?.description ?? JSON.stringify(d).slice(0, 500),
+  );
   process.exit(3);
 }
 const v = r.result?.value;

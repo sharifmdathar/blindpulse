@@ -38,7 +38,9 @@ const SNIPPETS = {
   "inline3.js": { ZswapTransient_: () => glue.ZswapTransient },
   "inline4.js": { ZswapOffer_: () => glue.ZswapOffer },
   "inline5.js": { ZswapOutput_: () => glue.ZswapOutput },
-  "inline6.js": { PrePartitionContractCall_: () => glue.PrePartitionContractCall },
+  "inline6.js": {
+    PrePartitionContractCall_: () => glue.PrePartitionContractCall,
+  },
   "inline7.js": { DustSpend_: () => glue.DustSpend },
   "inline8.js": { DustActions_: () => glue.DustActions },
   "inline9.js": { DustRegistration_: () => glue.DustRegistration },
@@ -69,7 +71,10 @@ function buildImports() {
 async function instantiateLedgerRuntime() {
   const bytes = await loadWasmBytes(WASM_URL, NODE_REL_PATH);
   const wasmModule = await WebAssembly.compile(bytes);
-  const wasmInstance = await WebAssembly.instantiate(wasmModule, buildImports());
+  const wasmInstance = await WebAssembly.instantiate(
+    wasmModule,
+    buildImports(),
+  );
   const wasm = wasmInstance.exports;
   __wbg_set_wasm(wasm);
   wasm.__wbindgen_start();

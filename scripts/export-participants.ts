@@ -59,7 +59,10 @@ async function checkTx(txId: string): Promise<TxStatus> {
     );
     if (!res.ok) return { ok: false, confirmed: false };
     const data = (await res.json()) as { status?: string; confirmed?: boolean };
-    return { ok: true, confirmed: Boolean(data.confirmed ?? data.status === "confirmed") };
+    return {
+      ok: true,
+      confirmed: Boolean(data.confirmed ?? data.status === "confirmed"),
+    };
   } catch {
     return { ok: false, confirmed: false };
   }

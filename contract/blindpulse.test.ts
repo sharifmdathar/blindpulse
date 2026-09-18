@@ -30,7 +30,9 @@ describe("BlindPulse Contract", () => {
     ledger: ReturnType<typeof createMockLedger>,
     caller: Uint8Array<ArrayBuffer>,
   ): boolean {
-    if (Array.from(caller).join(",") !== Array.from(ledger.organizer).join(",")) {
+    if (
+      Array.from(caller).join(",") !== Array.from(ledger.organizer).join(",")
+    ) {
       throw new Error("Only the organizer can close the survey");
     }
     ledger.surveyActive = false;

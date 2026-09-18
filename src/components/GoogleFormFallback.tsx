@@ -19,9 +19,7 @@ interface GoogleFormFallbackProps {
 export default function GoogleFormFallback({ url }: GoogleFormFallbackProps) {
   return (
     <div className="mb-6 rounded-lg border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm">
-      <p className="font-medium text-amber-200">
-        Don&apos;t have a wallet?
-      </p>
+      <p className="font-medium text-amber-200">Don&apos;t have a wallet?</p>
       <p className="mt-1 text-amber-100/80">
         You can{" "}
         <a
@@ -32,10 +30,9 @@ export default function GoogleFormFallback({ url }: GoogleFormFallbackProps) {
         >
           fill this survey via Google Forms instead
         </a>
-        . Note: those responses are collected by the organizer off-chain —
-        they are <span className="font-medium">not</span> part of the
-        on-chain anonymous tally and not covered by the zero-knowledge
-        guarantee.
+        . Note: those responses are collected by the organizer off-chain — they
+        are <span className="font-medium">not</span> part of the on-chain
+        anonymous tally and not covered by the zero-knowledge guarantee.
       </p>
     </div>
   );

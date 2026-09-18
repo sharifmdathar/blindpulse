@@ -17,7 +17,11 @@ import {
   buildNullifier,
   getWalletIdentity,
 } from "./midnight";
-import { deployContract, findDeployedContract, getPublicStates } from "@midnight-ntwrk/midnight-js-contracts";
+import {
+  deployContract,
+  findDeployedContract,
+  getPublicStates,
+} from "@midnight-ntwrk/midnight-js-contracts";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
 import type { StateValue } from "@midnight-ntwrk/compact-runtime";
 
@@ -67,7 +71,10 @@ function saveResponse(surveyId: string, responses: number[]): void {
   localStorage.setItem(RESPONSES_KEY, JSON.stringify(all));
 }
 
-function tallyResponses(surveyId: string, questionCount: number): Record<number, Record<number, number>> {
+function tallyResponses(
+  surveyId: string,
+  questionCount: number,
+): Record<number, Record<number, number>> {
   const all = getResponses();
   const surveyResponses = all[surveyId] ?? [];
   const tallies: Record<number, Record<number, number>> = {};
@@ -203,13 +210,18 @@ const PARTICIPANTS_KEY = "blindpulse_participants";
  * the chain doesn't already show. Stored: address, tx id, timestamp.
  * PRIVATE: never stored — responses, nullifier preimage, coin key.
  */
-async function recordParticipant(surveyId: string, txId: string | null): Promise<void> {
+async function recordParticipant(
+  surveyId: string,
+  txId: string | null,
+): Promise<void> {
   try {
     const api = getConnectedApi();
     if (!api) return;
     const { unshieldedAddress } = await api.getUnshieldedAddress();
-    const all: Record<string, Array<{ address: string; txId: string | null; at: number }>> =
-      JSON.parse(localStorage.getItem(PARTICIPANTS_KEY) ?? "{}");
+    const all: Record<
+      string,
+      Array<{ address: string; txId: string | null; at: number }>
+    > = JSON.parse(localStorage.getItem(PARTICIPANTS_KEY) ?? "{}");
     const list = all[surveyId] ?? [];
     // one entry per address per survey — mirrors the on-chain nullifier rule
     if (list.some((p) => p.address === unshieldedAddress)) return;
@@ -257,7 +269,10 @@ export async function closeSurvey(surveyId: string): Promise<void> {
 }
 
 /** Store response locally for demo purposes */
-export function storeResponseLocally(surveyId: string, responses: number[]): void {
+export function storeResponseLocally(
+  surveyId: string,
+  responses: number[],
+): void {
   saveResponse(surveyId, responses);
 }
 
@@ -309,9 +324,7 @@ export async function getResults(surveyId: string): Promise<SurveyResults> {
  * question text, options) is not present in this browser's localStorage —
  * e.g. a respondent or a member of the public opening a shared link.
  */
-export async function getSurveyMetadata(
-  surveyId: string,
-): Promise<{
+export async function getSurveyMetadata(surveyId: string): Promise<{
   questionCount: number;
   surveyActive: boolean;
   participantCount: number;

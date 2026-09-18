@@ -79,7 +79,9 @@ export default function SurveyForm({
       <div className="h-1 w-full rounded-full bg-white/10">
         <div
           className="h-1 rounded-full bg-gradient-to-r from-glow to-moon-300 transition-all"
-          style={{ width: `${questionCount ? (answered / questionCount) * 100 : 0}%` }}
+          style={{
+            width: `${questionCount ? (answered / questionCount) * 100 : 0}%`,
+          }}
         />
       </div>
 

@@ -27,9 +27,7 @@ export default function ResultsDashboard({
 
   if (!results) {
     return (
-      <div className="py-12 text-center text-moon-300/60">
-        Loading results…
-      </div>
+      <div className="py-12 text-center text-moon-300/60">Loading results…</div>
     );
   }
 
