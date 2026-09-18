@@ -9,3 +9,6 @@ public/midnight-runtime/
 next-env.d.ts
 .omo/
 .omc/
+
+# generated participant exports (test-multi-response --export)
+exports/

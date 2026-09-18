@@ -7,6 +7,7 @@
     "predev": "bash scripts/copy-wasm.sh",
     "compile": "bash scripts/compile.sh",
     "test": "jest --config jest.config.js",
+    "test-multi": "bun scripts/test-multi-response.ts",
     "deploy": "bash scripts/deploy.sh",
     "lint": "eslint ."
   },
