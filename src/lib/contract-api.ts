@@ -17,11 +17,16 @@ import {
   buildNullifier,
   getWalletIdentity,
 } from "./midnight";
+import type { BlindPulseCircuits } from "./midnight";
 import {
+  ContractTypeError,
   deployContract,
-  findDeployedContract,
   getPublicStates,
+  submitCallTx,
+  verifyContractState,
 } from "@midnight-ntwrk/midnight-js-contracts";
+import type { MidnightProviders } from "@midnight-ntwrk/midnight-js-types";
+import type { ContractAddress } from "@midnight-ntwrk/midnight-js-protocol/compact-runtime";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
 import type { StateValue } from "@midnight-ntwrk/compact-runtime";
 
@@ -53,6 +58,51 @@ async function decodeLedger(data: unknown) {
 
 /** MAX_Q — must match contract constant */
 const MAX_Q = 20;
+
+/**
+ * Confirms that one circuit's verifier key matches the deployed contract,
+ * then returns so the caller can invoke it.
+ *
+ * WHY NOT findDeployedContract(): that helper validates EVERY circuit of the
+ * compiled contract against the deployed contract's on-chain verifier keys,
+ * so a survey deployed before a later circuit changed becomes uncallable even
+ * for the circuits that still match the deployed bytecode byte-for-byte.
+ * Contract 9b6e0eed… predates the organizer gate on closeSurvey: its
+ * submitResponse matches exactly, but the whole-set check rejects the call
+ * with a ContractTypeError naming the unrelated circuit. Scoping the check to
+ * the circuit we are about to run keeps the guarantee that matters — "this is
+ * the circuit deployed at this address" — without refusing sound calls.
+ *
+ * Circuits that genuinely do not match (closeSurvey on such a survey) still
+ * fail, with an actionable message instead of a raw contract-state dump.
+ *
+ * PUBLIC: on-chain verifier keys and the compiled verifier key (both public).
+ * PRIVATE: none — no witness data reaches this function.
+ */
+async function assertCircuitDeployed(
+  providers: MidnightProviders<BlindPulseCircuits, string, unknown>,
+  contractAddress: ContractAddress,
+  circuitId: BlindPulseCircuits,
+): Promise<void> {
+  const [{ contractState }, verifierKeys] = await Promise.all([
+    getPublicStates(providers.publicDataProvider, contractAddress),
+    providers.zkConfigProvider.getVerifierKeys([circuitId]),
+  ]);
+  try {
+    verifyContractState(verifierKeys, contractState);
+  } catch (err) {
+    if (err instanceof ContractTypeError) {
+      throw new Error(
+        `This survey was deployed from an earlier build of the BlindPulse ` +
+          `contract, so its "${circuitId}" circuit no longer matches this app. ` +
+          `A deployed contract is immutable — create a new survey with the ` +
+          `current app to keep collecting anonymous responses.`,
+        { cause: err },
+      );
+    }
+    throw err;
+  }
+}
 
 const RESPONSES_KEY = "blindpulse_responses";
 
@@ -176,20 +226,22 @@ export async function submitResponse(
   const providers = await createContractProviders(api);
   const compiledContract = await getCompiledBlindPulse();
   try {
-    const found = await findDeployedContract(providers, {
-      compiledContract,
-      contractAddress: hexToContractAddress(surveyId),
-    });
+    const contractAddress = hexToContractAddress(surveyId);
+    // Only submitResponse is checked here — the circuit actually invoked.
+    await assertCircuitDeployed(providers, contractAddress, "submitResponse");
     const padded = Array.from({ length: MAX_Q }, (_, i) =>
       BigInt(responses[i] ?? 0),
     );
-    const result = await found.callTx.submitResponse(nullifier, padded);
-    // Defensive: tx id shape varies across midnight-js versions.
-    const txId =
-      (result as unknown as { txHash?: string })?.txHash ??
-      (result as unknown as { txId?: string })?.txId ??
-      null;
-    await recordParticipant(surveyId, txId);
+    // PRIVATE WITNESS: nullifier + padded responses enter the circuit here and
+    // are never written to public state. PUBLIC: the circuit's aggregate tally
+    // increments, the disclosed nullifier digest, and the tx id returned below.
+    const result = await submitCallTx(providers, {
+      compiledContract,
+      contractAddress,
+      circuitId: "submitResponse",
+      args: [nullifier, padded],
+    });
+    await recordParticipant(surveyId, result.public.txId);
   } catch (err) {
     // With a wallet connected, an on-chain failure must be visible — never
     // masquerade as success while only storing locally.
@@ -256,11 +308,17 @@ export async function closeSurvey(surveyId: string): Promise<void> {
     // compared in ZK against the stored organizer. It is never disclosed;
     // only the surveyActive=false flip becomes public.
     const { coinPublicKey } = await getWalletIdentity(api);
-    const found = await findDeployedContract(providers, {
+    const contractAddress = hexToContractAddress(surveyId);
+    // Only closeSurvey is checked here. On a survey deployed before the
+    // organizer gate this surfaces the "earlier build" message: the gate
+    // cannot be enforced on a contract that has no organizer check compiled in.
+    await assertCircuitDeployed(providers, contractAddress, "closeSurvey");
+    await submitCallTx(providers, {
       compiledContract,
-      contractAddress: hexToContractAddress(surveyId),
+      contractAddress,
+      circuitId: "closeSurvey",
+      args: [coinPublicKey],
     });
-    await found.callTx.closeSurvey(coinPublicKey);
   } catch (err) {
     console.error("On-chain closeSurvey failed:", err);
     const msg = err instanceof Error ? err.message : String(err);

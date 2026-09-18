@@ -12,3 +12,9 @@ next-env.d.ts
 
 # generated participant exports (test-multi-response --export)
 exports/
+
+# testkit-js writes a log file here on every import
+logs/
+
+# CLI voting script: wallet sync checkpoints (derived from the wallet seed)
+.wallet-state/
