@@ -1,8 +1,45 @@
 /** @type {import('next').NextConfig} */
-const path = require("path");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// ESM equivalent of CJS __dirname (webpack fallback block below uses it).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
   reactStrictMode: true,
+  // Turbopack is the default bundler since Next 16. The same module-graph
+  // workarounds that the webpack block applies below are expressed here as
+  // resolveAlias entries (turbopack.resolveAlias replaces webpack aliases).
+  turbopack: {
+    resolveAlias: {
+      // compact-runtime's exports map lists "default" before "types";
+      // alias directly to the dist file so named re-exports like
+      // ContractState/sampleSigningKey resolve without conditions-order
+      // errors.
+      "@midnight-ntwrk/compact-runtime": {
+        browser: "./node_modules/@midnight-ntwrk/compact-runtime/dist/index.js",
+        default: "./node_modules/@midnight-ntwrk/compact-runtime/dist/index.js",
+      },
+      // The wasm packages' browser entries statically import their .wasm
+      // binaries, which cannot be bundled — route both bundler targets to
+      // the runtime shims (JS glue + runtime instantiation from
+      // /midnight-runtime/*).
+      "@midnight-ntwrk/onchain-runtime-v3": {
+        browser: "./src/lib/wasm/onchain-runtime-v3.js",
+        default: "./src/lib/wasm/onchain-runtime-v3.js",
+      },
+      "@midnight-ntwrk/ledger-v8": {
+        browser: "./src/lib/wasm/ledger-v8.js",
+        default: "./src/lib/wasm/ledger-v8.js",
+      },
+      // isomorphic-ws: named-WebSocket shim for both bundle targets.
+      "isomorphic-ws": {
+        browser: "./src/lib/isomorphic-ws.js",
+        default: "./src/lib/isomorphic-ws.js",
+      },
+    },
+  },
+  // Kept for `next build --webpack` fallback parity. Turbopack ignores it.
   webpack: (config) => {
     // @midnight-ntwrk/compact-runtime ships an exports map with "default"
     // before "types" — webpack's enhanced-resolve rejects that ordering
@@ -47,4 +84,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

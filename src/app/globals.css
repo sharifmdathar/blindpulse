@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* Tailwind v4: the JS theme config (moon/night/glow tokens, glow shadows,
+   moon-text gradient) is loaded via @config instead of the v3 auto-detection. */
+@config "../../tailwind.config.ts";
 
 @layer base {
   html {
@@ -11,8 +12,10 @@
       system-ui,
       -apple-system,
       sans-serif;
-    color: theme("colors.moon.DEFAULT");
-    background-color: theme("colors.night.950");
+    /* moon.DEFAULT (#e9e5f6) on night.950 (#07070d) — inlined hex values so
+       the base layer never depends on theme() resolution. */
+    color: #e9e5f6;
+    background-color: #07070d;
     /* New-moon sky: a faint violet nebula rising from the bottom */
     background-image: radial-gradient(
       70rem 45rem at 50% 120%,
@@ -51,7 +54,7 @@
 
   /* Primary action — moonlit violet */
   .btn-primary {
-    @apply rounded-lg bg-gradient-to-r from-glow to-moon-400 px-5 py-2.5 text-sm font-semibold text-night-950 shadow-glow transition-all hover:brightness-110 disabled:bg-none disabled:bg-night-600 disabled:text-moon-300;
+    @apply rounded-lg bg-linear-to-r from-glow to-moon-400 px-5 py-2.5 text-sm font-semibold text-night-950 shadow-glow transition-all hover:brightness-110 disabled:bg-none disabled:bg-night-600 disabled:text-moon-300;
   }
 
   /* Secondary/ghost action */

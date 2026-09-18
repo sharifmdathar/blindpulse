@@ -20,11 +20,15 @@ const WASM_FILES: Record<string, string> = {
     "@midnight-ntwrk/ledger-v8/midnight_ledger_wasm_bg.wasm",
 };
 
+/**
+ * Next 15+: dynamic route params are async — always await before reading.
+ */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
-  const joined = (params.path ?? []).join("/");
+  const { path: segments } = await params;
+  const joined = (segments ?? []).join("/");
   const rel = WASM_FILES[joined];
   if (!rel) {
     return new NextResponse("Not found", { status: 404 });

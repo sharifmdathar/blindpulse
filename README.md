@@ -49,7 +49,7 @@ and [docs/PRODUCT.md](docs/PRODUCT.md) for the public product profile.
 - Midnight.js SDK 4.x + DApp Connector API (`@midnight-ntwrk/*`)
 - `@midnight-ntwrk/compact-runtime` 0.16.0 (pinned — see Toolchain below)
 - Lace Wallet (Preprod)
-- Next.js 14 + TypeScript + Tailwind
+- Next.js 16 + TypeScript + Tailwind 4
 - Docker (proof server)
 - GitHub Actions (CI/CD)
 

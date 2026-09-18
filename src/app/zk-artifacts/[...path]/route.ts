@@ -4,11 +4,15 @@ import { NextResponse } from "next/server";
 
 const MANAGED_DIR = path.join(process.cwd(), "managed");
 
+/**
+ * Next 15+: dynamic route params are async — always await before reading.
+ */
 export async function GET(
   _req: Request,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ): Promise<NextResponse> {
-  const [subdir, filename] = params.path;
+  const { path: segments } = await params;
+  const [subdir, filename] = segments;
   if (subdir !== "keys" && subdir !== "zkir") {
     return new NextResponse("not found", { status: 404 });
   }

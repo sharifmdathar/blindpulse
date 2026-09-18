@@ -22,7 +22,7 @@ Stop. Re-read this section. Fix it.
 ## TECH STACK (DO NOT SUBSTITUTE)
 
 - Smart contracts: Compact language (.compact files)
-- Frontend: Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- Frontend: Next.js 16 (App Router, Turbopack) + TypeScript + Tailwind CSS v4
 - Blockchain SDK: @midnight-ntwrk/midnight-js
 - Wallet: Lace via DApp Connector API (Preprod network)
 - ZK proofs: Compact compiler to circuits in /managed
